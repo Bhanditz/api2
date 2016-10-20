@@ -1,0 +1,42 @@
+version: "2"
+
+services:
+
+  graph-database:
+    build:
+      context: ./neo4j
+    image: api-neo4j-database
+    # set default mysql root password, change as needed
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    # Expose port 3306 to host. Not for the application but
+    # handy to inspect the database from the host machine.
+    ports:
+      - "7475:7474"
+      - "7688:7687"
+    restart: always
+
+  appserver:
+    build:
+      context: ./tomcat
+    image: api-tomcat-server
+    # mount point for application in tomcat
+    volumes:
+      - ../api2-war/target/api:/usr/local/tomcat/webapps/api
+    links:
+      - graph-database:api-neo4j-database
+    # open ports for tomcat and remote debugging
+    ports:
+      - "8080:8080"
+      - "8000:8000"
+    restart: always
+
+  webserver:
+    build:
+      context: ./apache
+    image: api-webserver
+    links:
+          - appserver:api-tomcat-server
+    ports:
+      - "80:80"
+    restart: always
