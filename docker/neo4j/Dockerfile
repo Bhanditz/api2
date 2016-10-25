@@ -24,7 +24,7 @@ ENTRYPOINT ["/scripts/run.sh"]
 CMD [""]
 
 # Expose listen port
-EXPOSE 7474
+EXPOSE 7474 5005
 
 # Expose our data volumes
 VOLUME ["/data"]

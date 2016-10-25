@@ -22,5 +22,5 @@ ENV JPDA_ADDRESS="8000"
 ENV JPDA_TRANSPORT="dt_socket"
 
 # start tomcat7 with remote debugging
-EXPOSE 8080
+EXPOSE 8080 8000
 CMD ["run.sh"]
