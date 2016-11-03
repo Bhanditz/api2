@@ -1,3 +1,3 @@
-Webserver container for the User Signup demo application.
+Webserver container for the API application.
 
-This container is a Tomcat 7 servlet engine with remote debugging enabled.
+This container is a Tomcat 8 servlet engine with remote debugging enabled.

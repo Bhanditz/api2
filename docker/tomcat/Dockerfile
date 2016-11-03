@@ -1,26 +1,25 @@
-#FROM pietvandongen/docker-tomcat-development:latest
-FROM tomcat:7-jre8
-MAINTAINER Sophia Parafina <sophia.parafina@docker.com>
+FROM tifayuki/java:8
+MAINTAINER Jeroen Jeurissen <jeroenjeurissen@gmail.com>
 
-# tomcat-users.xml sets up user accounts for the Tomcat manager GUI
-# and script access for Maven deployments
-ADD tomcat/tomcat-users.xml $CATALINA_HOME/conf/
+RUN apt-get update && \
+    apt-get install -yq --no-install-recommends wget pwgen ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# ADD tomcat/catalina.sh $CATALINA_HOME/bin/
-ADD tomcat/run.sh $CATALINA_HOME/bin/run.sh
-RUN chmod +x $CATALINA_HOME/bin/run.sh
+ENV TOMCAT_MAJOR_VERSION 8
+ENV TOMCAT_MINOR_VERSION 8.0.24
+ENV CATALINA_HOME /tomcat
+ENV JPDA_OPTS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
 
-# add MySQL JDBC driver jar
-ADD tomcat/mysql-connector-java-5.1.36-bin.jar $CATALINA_HOME/lib/
+RUN wget -q https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR_VERSION}/v${TOMCAT_MINOR_VERSION}/bin/apache-tomcat-${TOMCAT_MINOR_VERSION}.tar.gz && \
+    wget -qO- https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR_VERSION}/v${TOMCAT_MINOR_VERSION}/bin/apache-tomcat-${TOMCAT_MINOR_VERSION}.tar.gz.md5 | md5sum -c - && \
+    tar zxf apache-tomcat-*.tar.gz && \
+    rm apache-tomcat-*.tar.gz && \
+    mv apache-tomcat* tomcat
 
-# create mount point for volume with application
-RUN mkdir $CATALINA_HOME/webapps/api
+ADD create_tomcat_admin_user.sh /create_tomcat_admin_user.sh
+ADD run.sh /run.sh
+RUN chmod +x /*.sh
 
-# add tomcat jpda debugging environmental variables
-#ENV JPDA_OPTS="-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n"
-ENV JPDA_ADDRESS="8000"
-ENV JPDA_TRANSPORT="dt_socket"
-
-# start tomcat7 with remote debugging
-EXPOSE 8080 8000
-CMD ["run.sh"]
+EXPOSE 8080
+CMD ["/run.sh"]
