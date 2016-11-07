@@ -9,6 +9,7 @@ services:
     ports:
     - "5432:5432"
     environment:
+    #postgres super user
         POSTGRES_PASSWORD: postgres
         POSTGRES_USER: postgres
     restart: always
@@ -51,3 +52,10 @@ services:
     ports:
       - "80:80"
     restart: always
+    environment:
+      WWW_HOST: www.myeuropeana.eu
+      ANNOTATIONS_HOST: test-annotations.europeana.eu
+      API_HOST: appserver:8080
+      EXHIBITIONS_HOST: exhibitions-test.cfapps.io
+      PORTAL_HOST: portal-test.cfapps.io
+
