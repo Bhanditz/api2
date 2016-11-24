@@ -17,16 +17,27 @@
 
 package eu.europeana.api2.v2.web.controller;
 
+import eu.europeana.api2.ApiLimitException;
 import eu.europeana.api2.model.json.ApiError;
 import eu.europeana.api2.utils.JsonUtils;
+import eu.europeana.api2.v2.model.LimitResponse;
+import eu.europeana.api2.v2.model.json.HierarchicalResult;
+import eu.europeana.api2.v2.service.HierarchyRunner;
 import eu.europeana.api2.v2.utils.ControllerUtils;
 import eu.europeana.api2.v2.web.swagger.SwaggerIgnore;
 import eu.europeana.corelib.db.entity.enums.RecordType;
 import eu.europeana.corelib.definitions.exception.Neo4JException;
+import eu.europeana.corelib.neo4j.entity.Neo4jBean;
+import eu.europeana.corelib.neo4j.entity.Neo4jStructBean;
 import eu.europeana.corelib.search.SearchService;
+import eu.europeana.corelib.web.utils.RequestUtils;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,10 +49,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * @author Willem-Jan Boogerd <www.eledge.net/contact>
@@ -54,6 +64,7 @@ import java.util.concurrent.Future;
 public class HierarchicalController {
 
     private static Logger log = Logger.getLogger(HierarchicalController.class);
+    private static final int MAX_LIMIT = 100;
 
     @Resource
     private SearchService searchService;
@@ -63,6 +74,12 @@ public class HierarchicalController {
 
     @Resource
     private ObjectController objectController;
+
+    @SuppressWarnings("SpringJavaAutowiringInspection")
+    @Bean
+    public HierarchyRunner hierarchyRunnerBean() {
+        return new HierarchyRunner();
+    }
 
     @ApiOperation(value = "returns the object itself")
     @RequestMapping(value = "/{collectionId}/{recordId}/self.json", method = RequestMethod.GET,
@@ -187,19 +204,25 @@ public class HierarchicalController {
                 profile, wskey, limit, offset, callback, request, response, redirectAttrs);
     }
 
-    private ModelAndView hierarchyTemplate(RecordType recordType,
-                                           String collectionId, String recordId, String profile,
-                                           String wskey, int limit, int offset, String callback,
-                                           HttpServletRequest request, HttpServletResponse response,
-                                           RedirectAttributes redirectAttrs) {
-        ExecutorService service = Executors.newSingleThreadExecutor();
-        String rdfAbout = "/" + collectionId + "/" + recordId;
-        HierarchyTemplateRunner runner = new HierarchyTemplateRunner(recordType, rdfAbout,
-                profile, wskey, limit, offset, callback, request, response, log,
-                controllerUtils, searchService);
-        Future<ModelAndView> future = service.submit(runner);
+    public HierarchicalController() {
+    }
+
+
+    public ModelAndView hierarchyTemplate(RecordType recordType, String collectionId, String recordId,
+                                          String profile, String wskey, int limit, int offset, String callback,
+                                          HttpServletRequest request, HttpServletResponse response,
+                                          RedirectAttributes redirectAttrs) {
+
+        String                  rdfAbout = "/" + collectionId + "/" + recordId;
+        HierarchyRunner mrBean = hierarchyRunnerBean();
         try {
-            return future.get();
+            Future<ModelAndView> result = mrBean.call(recordType, rdfAbout, profile, wskey, limit,
+                    offset, callback, request, response, log, controllerUtils, searchService);
+            return result.get();
+        } catch (Neo4JException e) {
+            log.error("Neo4JException thrown: " + e.getMessage());
+            log.error("Cause: " + e.getCause());
+            return generateErrorHierarchy(recordType, rdfAbout, wskey, callback, "Neo4JException");
         } catch (InterruptedException e) {
             log.error("InterruptedException thrown: " + e.getMessage());
             log.error("Cause: " + e.getCause());
@@ -239,4 +262,5 @@ public class HierarchicalController {
         }
         return action;
     }
+
 }
