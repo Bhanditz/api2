@@ -120,7 +120,7 @@ public class HierarchyRunner {
             hierarchicalResult.success = false;
             response.setStatus(404);
             return new AsyncResult <> (JsonUtils.toJson(new ApiError(wskey,
-                    String.format("Invalid record identifier: %s", rdfAbout),
+                    String.format("Invalid hierarchical record identifier: %s", rdfAbout),
                     limitResponse.getRequestNumber()), callback));
         }
 
