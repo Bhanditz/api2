@@ -187,11 +187,11 @@ public class HierarchicalController {
         } catch (Neo4JException e) {
             log.error("Neo4JException thrown: " + e.getMessage());
             log.error("Cause: " + e.getCause());
-            return generateErrorHierarchy(rdfAbout, wskey, callback, "Neo4JException");
+            return generateErrorHierarchy(rdfAbout, wskey, callback, e.getProblem().getMessage() + " for");
         } catch (InterruptedException e) {
             log.error("InterruptedException thrown: " + e.getMessage());
             log.error("Cause: " + e.getCause());
-            return generateErrorHierarchy(rdfAbout, wskey, callback, "InterruptedException");
+            return generateErrorHierarchy(rdfAbout, wskey, callback, "InterruptedException thrown when processing");
         } catch (ExecutionException e) {
             log.error("ExecutionExeption thrown: " + e.getMessage());
             log.error("Cause: " + e.getCause());
@@ -204,8 +204,8 @@ public class HierarchicalController {
     }
 
     private ModelAndView generateErrorHierarchy(String rdfAbout, String wskey, String callback,
-                                                String exceptionType) {
-        return JsonUtils.toJson(new ApiError(wskey, String.format(exceptionType + " thrown when processing record %s",
+                                                String message) {
+        return JsonUtils.toJson(new ApiError(wskey, String.format(message + " record %s",
                 rdfAbout), -1L), callback);
 
     }
