@@ -15,6 +15,8 @@ RUN wget -q https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR_VERSION
     tar zxf apache-tomcat-*.tar.gz && \
     rm apache-tomcat-*.tar.gz && \
     mv apache-tomcat* tomcat
+#Workarround Manually copy the api.war file from the t/api2-war/target/api directory to the /docker/tomcat directory
+COPY api.war /tomcat/webapps/api
 
 ADD create_tomcat_admin_user.sh /create_tomcat_admin_user.sh
 ADD run.sh /run.sh
