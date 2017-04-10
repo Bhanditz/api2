@@ -449,54 +449,59 @@ public class SearchController {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends IdBean> SearchResults<T> createResults(
-            String apiKey,
-            String profile,
-            Query query,
-            Class<T> clazz)
-            throws SolrTypeException {
-        FacetWrangler wrangler = new FacetWrangler();
+    private <T extends IdBean> SearchResults<T> createResults(String apiKey, String profile, Query query, Class<T> clazz) throws SolrTypeException {
+        FacetWrangler    wrangler = new FacetWrangler();
         SearchResults<T> response = new SearchResults<>(apiKey);
-        ResultSet<T> resultSet = searchService.search(clazz, query);
-        response.totalResults = resultSet.getResultSize();
-            if ( StringUtils.isNotBlank(resultSet.getCurrentCursorMark()) &&
-                 StringUtils.isNotBlank(resultSet.getNextCursorMark()) &&
-                 !resultSet.getNextCursorMark().equalsIgnoreCase(resultSet.getCurrentCursorMark())
-                ) response.nextCursor = resultSet.getNextCursorMark();
-
-            response.itemsCount = resultSet.getResults().size();
-            response.items = resultSet.getResults();
-
-            List<T> beans = new ArrayList<>();
-            for (T b : resultSet.getResults()) {
-                if (b instanceof RichBean) beans.add((T) new RichView((RichBean) b, profile, apiKey));
-                else if (b instanceof ApiBean) beans.add((T) new ApiView((ApiBean) b, profile, apiKey));
-                else if (b instanceof BriefBean) beans.add((T) new BriefView((BriefBean) b, profile, apiKey));
-            }
-
-            List<FacetField> facetFields = resultSet.getFacetFields();
-            if (resultSet.getQueryFacets() != null) {
-                List<FacetField> allQueryFacetsMap = SearchUtils.extractQueryFacets(resultSet.getQueryFacets());
-                if (!allQueryFacetsMap.isEmpty()) facetFields.addAll(allQueryFacetsMap);
-            }
-
-            if (log.isInfoEnabled()) log.info("beans: " + beans.size());
-
-            response.items = beans;
-        if (StringUtils.containsIgnoreCase(profile, "facets") ||
-            StringUtils.containsIgnoreCase(profile, "portal")) {
-            response.facets = wrangler.consolidateFacetList(resultSet.getFacetFields(),
-                    query.getTechnicalFacets(), query.isDefaultFacetsRequested(),
-                    query.getTechnicalFacetLimits(), query.getTechnicalFacetOffsets());
+        ResultSet<T>     resultSet;
+        if (StringUtils.containsIgnoreCase(profile, "debug")) {
+            resultSet = searchService.search(clazz, query, true);
+        } else {
+            resultSet = searchService.search(clazz, query);
         }
-            if (StringUtils.containsIgnoreCase(profile, "breadcrumb") ||
-                    StringUtils.containsIgnoreCase(profile, "portal")) {
-                response.breadCrumbs = NavigationUtils.createBreadCrumbList(query);
+        response.totalResults = resultSet.getResultSize();
+        if (StringUtils.isNotBlank(resultSet.getCurrentCursorMark()) && StringUtils.isNotBlank(resultSet.getNextCursorMark()) && !resultSet.getNextCursorMark().equalsIgnoreCase(resultSet.getCurrentCursorMark())) {
+            response.nextCursor = resultSet.getNextCursorMark();
+        }
+
+        response.itemsCount = resultSet.getResults().size();
+        response.items = resultSet.getResults();
+
+        List<T> beans = new ArrayList<>();
+        for (T b : resultSet.getResults()) {
+            if (b instanceof RichBean) {
+                beans.add((T) new RichView((RichBean) b, profile, apiKey));
+            } else if (b instanceof ApiBean) {
+                beans.add((T) new ApiView((ApiBean) b, profile, apiKey));
+            } else if (b instanceof BriefBean) {
+                beans.add((T) new BriefView((BriefBean) b, profile, apiKey));
             }
-            if (StringUtils.containsIgnoreCase(profile, "spelling") ||
-                    StringUtils.containsIgnoreCase(profile, "portal")) {
-                response.spellcheck = ModelUtils.convertSpellCheck(resultSet.getSpellcheck());
+        }
+
+        List<FacetField> facetFields = resultSet.getFacetFields();
+        if (resultSet.getQueryFacets() != null) {
+            List<FacetField> allQueryFacetsMap = SearchUtils.extractQueryFacets(resultSet.getQueryFacets());
+            if (!allQueryFacetsMap.isEmpty()) {
+                facetFields.addAll(allQueryFacetsMap);
             }
+        }
+
+        if (log.isInfoEnabled()) {
+            log.info("beans: " + beans.size());
+        }
+
+        response.items = beans;
+        if (StringUtils.containsIgnoreCase(profile, "facets") || StringUtils.containsIgnoreCase(profile, "portal")) {
+            response.facets = wrangler.consolidateFacetList(resultSet.getFacetFields(), query.getTechnicalFacets(), query.isDefaultFacetsRequested(), query.getTechnicalFacetLimits(), query.getTechnicalFacetOffsets());
+        }
+        if (StringUtils.containsIgnoreCase(profile, "breadcrumb") || StringUtils.containsIgnoreCase(profile, "portal")) {
+            response.breadCrumbs = NavigationUtils.createBreadCrumbList(query);
+        }
+        if (StringUtils.containsIgnoreCase(profile, "spelling") || StringUtils.containsIgnoreCase(profile, "portal")) {
+            response.spellcheck = ModelUtils.convertSpellCheck(resultSet.getSpellcheck());
+        }
+        if (StringUtils.containsIgnoreCase(profile, "debug")) {
+            response.debug = resultSet.getSolrQueryString();
+        }
 //        if (StringUtils.containsIgnoreCase(profile, "params")) {
 //            response.addParam("sort", resultSet.getSortField());
 //        }
