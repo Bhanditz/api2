@@ -19,6 +19,29 @@ import javax.servlet.ServletException;
 public class ServletInitializer extends AbstractDispatcherServletInitializer {
 
     @Override
+    protected WebApplicationContext createServletApplicationContext() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        //context.scan(ClassUtils.getPackageName(getClass()));
+        context.register(SwaggerConfig.class, WebMvcConfig.class);
+        context.addApplicationListener(new VcapPropertyLoaderListener());
+        return context;
+    }
+
+    @Override
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+
+    @Override
+    protected WebApplicationContext createRootApplicationContext() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        //context.scan(ClassUtils.getPackageName(getClass()));
+        context.register(AppConfig.class, OAuth2ServerConfig.class, SecurityConfig.class);
+        context.addApplicationListener(new VcapPropertyLoaderListener());
+        return context;
+    }
+
+    @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         super.onStartup(servletContext);
         registerProxyFilter(servletContext, "springSecurityFilterChain");
@@ -28,27 +51,6 @@ public class ServletInitializer extends AbstractDispatcherServletInitializer {
         DelegatingFilterProxy filter = new DelegatingFilterProxy(name);
         filter.setContextAttribute("org.springframework.web.servlet.FrameworkServlet.CONTEXT.dispatcher");
         servletContext.addFilter(name, filter).addMappingForUrlPatterns(null, false, "/*");
-    }
-
-    @Override
-    protected WebApplicationContext createRootApplicationContext() {
-        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(AppConfig.class, OAuth2ServerConfig.class, SecurityConfig.class);
-        context.addApplicationListener(new VcapPropertyLoaderListener());
-        return context;
-    }
-
-    @Override
-    protected WebApplicationContext createServletApplicationContext() {
-        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(SwaggerConfig.class, WebMvcConfig.class);
-        //context.addApplicationListener(new VcapPropertyLoaderListener());
-        return context;
-    }
-
-    @Override
-    protected String[] getServletMappings() {
-        return new String[]{"/"};
     }
 
 }

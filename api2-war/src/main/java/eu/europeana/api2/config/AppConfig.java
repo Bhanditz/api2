@@ -1,6 +1,8 @@
 package eu.europeana.api2.config;
 
 import eu.europeana.api2.v2.schedule.SugarCRMPollingScheduler;
+import eu.europeana.api2.v2.service.GoogleVisionService;
+import eu.europeana.api2.v2.service.MicrosoftVisionService;
 import eu.europeana.api2.v2.service.SugarCRMCache;
 import eu.europeana.api2.v2.service.SugarCRMImporter;
 import eu.europeana.api2.v2.utils.ApiKeyUtils;
@@ -90,6 +92,12 @@ public class AppConfig {
     public SugarCRMCache sugarCRMCache() {
         return new SugarCRMCache();
     }
+
+    @Bean
+    public MicrosoftVisionService msVisionService() { return new MicrosoftVisionService(); }
+
+    @Bean
+    public GoogleVisionService gVisionService() { return new GoogleVisionService(); }
 
     /**
      * The ObjectStorageClient allows access to our Storage Provider where thumbnails and sitemap files are stored

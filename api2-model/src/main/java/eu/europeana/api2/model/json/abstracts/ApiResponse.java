@@ -18,10 +18,14 @@
 package eu.europeana.api2.model.json.abstracts;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.corelib.utils.StringArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.json.JSONObject;
 
+
+import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,12 +56,24 @@ public abstract class ApiResponse {
 
 	public Map<String, Object> params;
 
+	public Map<String, Object> vision;
+
 	public ApiResponse(String apikey) {
 		this.apikey = apikey;
 	}
 
 	public ApiResponse() {
 		// used by Jackson
+	}
+
+	/**
+	 * Add computer vision JSON to the api response
+	 * @param visionResult
+	 * @throws IOException
+	 */
+	public void addVision(JSONObject visionResult) throws IOException {
+			ObjectMapper mapper = new ObjectMapper();
+			this.vision = mapper.readValue(visionResult.toString(), Map.class);
 	}
 	
 	public void addParam(String name, Object value) {

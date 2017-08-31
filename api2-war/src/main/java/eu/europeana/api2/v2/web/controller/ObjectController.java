@@ -35,6 +35,7 @@ import eu.europeana.api2.v2.model.json.view.BriefView;
 import eu.europeana.api2.v2.model.json.view.FullDoc;
 import eu.europeana.api2.v2.model.json.view.FullView;
 import eu.europeana.api2.v2.model.xml.srw.Record;
+import eu.europeana.api2.v2.service.MicrosoftVisionService;
 import eu.europeana.api2.v2.utils.ApiKeyUtils;
 import eu.europeana.api2.v2.utils.ControllerUtils;
 import eu.europeana.api2.v2.web.swagger.SwaggerIgnore;
@@ -42,8 +43,11 @@ import eu.europeana.api2.v2.web.swagger.SwaggerSelect;
 import eu.europeana.corelib.db.entity.enums.RecordType;
 import eu.europeana.corelib.definitions.edm.beans.BriefBean;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
+import eu.europeana.corelib.definitions.edm.entity.Aggregation;
+import eu.europeana.corelib.definitions.edm.entity.Proxy;
 import eu.europeana.corelib.edm.exceptions.BadDataException;
 import eu.europeana.corelib.neo4j.exception.Neo4JException;
+import eu.europeana.corelib.solr.entity.ProxyImpl;
 import eu.europeana.corelib.web.exception.EuropeanaException;
 import eu.europeana.corelib.edm.exceptions.MongoDBException;
 import eu.europeana.corelib.edm.utils.EdmUtils;
@@ -58,6 +62,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -92,6 +98,8 @@ public class ObjectController {
 
     private ApiKeyUtils apiKeyUtils;
 
+    private MicrosoftVisionService msVisionService;
+
     /**
      * Create a new ObjectController
      *
@@ -99,9 +107,10 @@ public class ObjectController {
      * @param apiKeyUtils
      */
     @Autowired
-    public ObjectController(SearchService searchService, ApiKeyUtils apiKeyUtils) {
+    public ObjectController(SearchService searchService, ApiKeyUtils apiKeyUtils, MicrosoftVisionService msVisionService) {
         this.searchService = searchService;
         this.apiKeyUtils = apiKeyUtils;
+        this.msVisionService = msVisionService;
     }
 
     /**
@@ -127,10 +136,11 @@ public class ObjectController {
                                @RequestParam(value = "wskey", required = true) String wskey,
                                @RequestParam(value = "callback", required = false) String callback,
                                @RequestParam(value = "hierarchytimeout", required = false, defaultValue = "0") int hierarchyTimeout,
+                               @RequestParam(value = "confidence", required = false) String confidence,
                                WebRequest webRequest,
                                HttpServletRequest servletRequest,
                                HttpServletResponse response) throws ApiLimitException {
-        RequestData data = new RequestData(collectionId, recordId, wskey, profile, hierarchyTimeout, callback, webRequest, servletRequest);
+        RequestData data = new RequestData(collectionId, recordId, wskey, profile, hierarchyTimeout, confidence, callback, webRequest, servletRequest);
         try {
             return (ModelAndView) handleRecordRequest(RecordType.OBJECT, data, response);
         } catch (EuropeanaException e) {
@@ -202,7 +212,7 @@ public class ObjectController {
                                      HttpServletRequest servletRequest,
                                      HttpServletResponse response) throws ApiLimitException {
 
-        RequestData data = new RequestData(collectionId, recordId, wskey, format, null, callback, webRequest, servletRequest);
+        RequestData data = new RequestData(collectionId, recordId, wskey, format, null, null, callback, webRequest, servletRequest);
         try {
             return (ModelAndView) handleRecordRequest(RecordType.OBJECT_JSONLD, data, response);
         } catch (EuropeanaException e) {
@@ -232,7 +242,7 @@ public class ObjectController {
                                   WebRequest webRequest,
                                   HttpServletRequest servletRequest,
                                   HttpServletResponse response) throws ApiLimitException {
-        RequestData data = new RequestData(collectionId, recordId, wskey, null, null, null, webRequest, servletRequest);
+        RequestData data = new RequestData(collectionId, recordId, wskey, null, null, null, null, webRequest, servletRequest);
         try {
             return (ModelAndView) handleRecordRequest(RecordType.OBJECT_RDF, data, response);
         } catch (EuropeanaException e) {
@@ -265,7 +275,7 @@ public class ObjectController {
                           WebRequest webRequest,
                           HttpServletRequest servletRequest,
                           HttpServletResponse response) throws ApiLimitException, EuropeanaException {
-        RequestData data = new RequestData(collectionId, recordId, wskey, null, null, null, webRequest, servletRequest);
+        RequestData data = new RequestData(collectionId, recordId, wskey, null, null, null, null, webRequest, servletRequest);
         // output can be an SrwResponse (status 200)
         Object out = handleRecordRequest(RecordType.OBJECT_SRW, data, response);
         if (out instanceof SrwResponse) {
@@ -334,10 +344,10 @@ public class ObjectController {
         // check modified
         // 2017-07-10 PE: Decided to postpone the modified check for now (see also ticket 676)
         //if (bean.getTimestampUpdated() != null && data.webRequest.checkNotModified(bean.getTimestampUpdated().getTime()))
-        {
+        //{
             // checkNotModified method will set LastModified header automatically and will return 304 - Not modified if necessary
             // (but only when clients include the If_Modified_Since header in their request)
-        }
+       //}
 
         // generate output depending on type of record
         Object output;
@@ -367,6 +377,22 @@ public class ObjectController {
     private ModelAndView generateJson(FullBean bean, RequestData data, long startTime) {
         ObjectResult objectResult = new ObjectResult(data.wskey, data.apikeyCheckResponse.getRequestNumber());
 
+        // process vision stuff
+        // HACK: commented out line below so Portal will always invoke it (for demo), also set fixed confidence value
+        //if (StringUtils.containsIgnoreCase(data.profile, "vision")) {
+            if (StringUtils.isEmpty(data.confidence)) {
+                data.confidence = "0.67";
+            }
+            JSONObject visionResult = doVisionStuff((FullBeanImpl) bean, data);
+            if (visionResult != null) {
+                try {
+                    objectResult.addVision(visionResult);
+                } catch (IOException e) {
+                    LOG.error("Error converting vision data to json", e);
+                }
+            }
+        //}
+
         if (StringUtils.containsIgnoreCase(data.profile, "params")) {
             objectResult.addParams(RequestUtils.getParameterMap(data.servletRequest), "wskey");
             objectResult.addParam("profile", data.profile);
@@ -379,6 +405,89 @@ public class ObjectController {
         objectResult.object = new FullView(bean, data.profile, data.wskey);
         objectResult.statsDuration = System.currentTimeMillis() - startTime;
         return JsonUtils.toJson(objectResult, data.callback);
+    }
+
+    /**
+     * Returns the unfiltered result from the MS Vision API, but also adds a proxy with filtered tags and description to
+     * the EDM bean
+     * @param bean
+     */
+    private JSONObject doVisionStuff(FullBeanImpl bean, RequestData data) {
+        // get image url
+        String imageUrl = bean.getEuropeanaAggregation().getEdmIsShownBy();
+        if (imageUrl == null) {
+            // check aggregations until we find a edmIsShownBy
+            for (Aggregation a : bean.getAggregations()) {
+                if (a.getEdmIsShownBy() != null) {
+                    imageUrl = a.getEdmIsShownBy();
+                    break;
+                }
+            }
+            if (StringUtils.isEmpty(imageUrl)) {
+                imageUrl = bean.getEuropeanaAggregation().getEdmPreview();
+                LOG.warn("No edmIsShownAt, trying thumbnail instead: "+imageUrl);
+            }
+        }
+
+        // analyze image
+        JSONObject result;
+        if (StringUtils.isEmpty(imageUrl)) {
+            result = new JSONObject("{ message : \"No image\" }");
+        } else {
+            result = msVisionService.analyze(imageUrl, null);
+            // make a copy of the json before filtering
+            JSONObject filteredResult = new JSONObject(result.toString());
+
+            // filter result if necessary
+            if (StringUtils.isNotEmpty(data.confidence)) {
+                Double confidence = Double.valueOf(data.confidence);
+                try {
+                    filteredResult = msVisionService.filterResponse(filteredResult, confidence);
+                } catch (IOException e) {
+                    LOG.error("Error filtering vision result", e);
+                }
+            }
+
+            // add information to bean as proxy
+            ProxyImpl proxy = new ProxyImpl();
+            proxy.setAbout("/proxy/vision/" + bean.getAbout());
+            proxy.setEuropeanaProxy(false);
+
+            // add tags
+            JSONArray tags = filteredResult.optJSONArray("tags");
+            if (tags != null) {
+                Map tagMap = new HashMap();
+                List tagList = new ArrayList();
+                for (int i = 0; i < tags.length(); i++) {
+                    if (tags.opt(i) != null) {
+                        tagList.add(tags.opt(i).toString());
+                    }
+                }
+                tagMap.put("en", tagList);
+                proxy.setUserTags(tagMap);
+            }
+
+            // add description
+            JSONObject description = filteredResult.optJSONObject("description");
+            if (description != null) {
+                JSONObject captions = description.optJSONObject("captions");
+                if (captions != null) {
+                    JSONObject descriptionText = captions.optJSONObject("text");
+                    if (descriptionText != null) {
+                        Map descriptMap = new HashMap<String, List<String>>();
+                        ArrayList descriptList = new ArrayList();
+                        descriptList.add(descriptionText.toString());
+                        descriptMap.put("en", descriptList);
+                        proxy.setDcDescription(descriptMap);
+                    }
+                }
+            }
+
+            List<ProxyImpl> proxies = bean.getProxies();
+            proxies.add(proxy);
+        }
+
+        return result;
     }
 
     private ModelAndView generateJsonLd(FullBean bean, RequestData data, HttpServletResponse response) {
@@ -526,15 +635,17 @@ public class ObjectController {
         protected String             wskey;
         protected LimitResponse      apikeyCheckResponse;
         protected Integer            hierarchyTimeout;
+        protected String             confidence;
         protected String             callback;
         protected WebRequest         webRequest;
         protected HttpServletRequest servletRequest;
 
-        public RequestData(String collectionId, String recordId, String wskey, String profile, Integer hierarchyTimeout, String callback, WebRequest webRequest, HttpServletRequest servletRequest) {
+        public RequestData(String collectionId, String recordId, String wskey, String profile, Integer hierarchyTimeout, String confidence, String callback, WebRequest webRequest, HttpServletRequest servletRequest) {
             this.europeanaObjectId = EuropeanaUriUtils.createEuropeanaId(collectionId, recordId);
             this.wskey = wskey;
             this.profile = profile;
             this.hierarchyTimeout = hierarchyTimeout;
+            this.confidence = confidence;
             this.callback = callback;
             this.webRequest = webRequest;
             this.servletRequest = servletRequest;
