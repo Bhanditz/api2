@@ -45,6 +45,7 @@ import eu.europeana.corelib.definitions.edm.beans.BriefBean;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.Aggregation;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;
+import eu.europeana.corelib.definitions.jibx.EuropeanaProxy;
 import eu.europeana.corelib.edm.exceptions.BadDataException;
 import eu.europeana.corelib.neo4j.exception.Neo4JException;
 import eu.europeana.corelib.solr.entity.ProxyImpl;
@@ -448,43 +449,80 @@ public class ObjectController {
                 }
             }
 
-            // add information to bean as proxy
-            ProxyImpl proxy = new ProxyImpl();
-            proxy.setAbout("/proxy/vision/" + bean.getAbout());
-            proxy.setEuropeanaProxy(false);
+            // HACK add information to/as europeana proxy (so it shows up for demo)
+            ProxyImpl proxy = null;
+            for (ProxyImpl p : bean.getProxies()) {
+                if (p.isEuropeanaProxy()) {
+                    proxy = p;
+                    break;
+                }
+            }
+            if (proxy == null ) {
+                proxy = new ProxyImpl();
+                proxy.setAbout("/proxy/europeana" + bean.getAbout());
+                proxy.setEuropeanaProxy(true);
+            }
+
+            // add information to bean as new proxy
+//            ProxyImpl proxy = new ProxyImpl();
+//            proxy.setAbout("/proxy/vision" + bean.getAbout());
+//            proxy.setEuropeanaProxy(false);
 
             // add tags
             JSONArray tags = filteredResult.optJSONArray("tags");
             if (tags != null) {
-                Map tagMap = new HashMap();
-                List tagList = new ArrayList();
+                Map<String, List<String>> tagMap = proxy.getUserTags();
+                if (tagMap == null) {
+                    tagMap = new HashMap();
+                }
+                List<String> tagsToAdd = new ArrayList();
                 for (int i = 0; i < tags.length(); i++) {
-                    if (tags.opt(i) != null) {
-                        tagList.add(tags.opt(i).toString());
+                    JSONObject tag = tags.optJSONObject(i);
+                    if (tag != null) {
+                        tagsToAdd.add(tag.get("name").toString());
                     }
                 }
-                tagMap.put("en", tagList);
+
+                List<String> existingTags = tagMap.get("en");
+                if (existingTags == null) {
+                    existingTags = new ArrayList<String>();
+                    tagMap.put("en", existingTags);
+                }
+                existingTags.addAll(tagsToAdd);
                 proxy.setUserTags(tagMap);
             }
 
             // add description
             JSONObject description = filteredResult.optJSONObject("description");
             if (description != null) {
-                JSONObject captions = description.optJSONObject("captions");
+                JSONArray captions = description.optJSONArray("captions");
                 if (captions != null) {
-                    JSONObject descriptionText = captions.optJSONObject("text");
-                    if (descriptionText != null) {
-                        Map descriptMap = new HashMap<String, List<String>>();
-                        ArrayList descriptList = new ArrayList();
-                        descriptList.add(descriptionText.toString());
-                        descriptMap.put("en", descriptList);
-                        proxy.setDcDescription(descriptMap);
+
+                    Map<String, List<String>> descriptMap = proxy.getDcDescription();
+                    if (descriptMap == null) {
+                        descriptMap = new HashMap();
                     }
+                    List<String> descriptToAdd = new ArrayList();
+
+                    for (int i = 0; i < captions.length(); i++) {
+                        JSONObject caption = captions.optJSONObject(i);
+                        if (caption != null) {
+                            String descriptionText = caption.optString("text");
+                            if (descriptionText != null) {
+                                descriptToAdd.add(descriptionText);
+                            }
+                        }
+                    }
+
+                    List<String> existingDescriptions = descriptMap.get("en");
+                    if (existingDescriptions == null) {
+                        existingDescriptions = new ArrayList<String>();
+                        descriptMap.put("en", existingDescriptions);
+                    }
+                    existingDescriptions.addAll(descriptToAdd);
+                    proxy.setDcDescription(descriptMap);
                 }
             }
-
-            List<ProxyImpl> proxies = bean.getProxies();
-            proxies.add(proxy);
         }
 
         return result;
