@@ -469,13 +469,13 @@ public class ObjectController {
 //            proxy.setEuropeanaProxy(false);
 
             // add tags
+            List<String> tagsToAdd = new ArrayList();
             JSONArray tags = filteredResult.optJSONArray("tags");
             if (tags != null) {
                 Map<String, List<String>> tagMap = proxy.getUserTags();
                 if (tagMap == null) {
                     tagMap = new HashMap();
                 }
-                List<String> tagsToAdd = new ArrayList();
                 for (int i = 0; i < tags.length(); i++) {
                     JSONObject tag = tags.optJSONObject(i);
                     if (tag != null) {
@@ -493,6 +493,20 @@ public class ObjectController {
             }
 
             // add description
+            List<String> descriptToAdd = new ArrayList();
+            // HACK: userTags dont' show up in Portal, so we add a new line with usertags ourselves to descriptions
+            String tagsDescription = null;
+            if (tagsToAdd.size() > 0) {
+                StringBuilder s = new StringBuilder("Tags: ");
+                for (String tag : tagsToAdd) {
+                    if (s.length() > 6) {
+                        s.append(", ");
+                    }
+                    s.append(tag);
+                }
+                tagsDescription = s.toString();
+            }
+
             JSONObject description = filteredResult.optJSONObject("description");
             if (description != null) {
                 JSONArray captions = description.optJSONArray("captions");
@@ -502,7 +516,6 @@ public class ObjectController {
                     if (descriptMap == null) {
                         descriptMap = new HashMap();
                     }
-                    List<String> descriptToAdd = new ArrayList();
 
                     for (int i = 0; i < captions.length(); i++) {
                         JSONObject caption = captions.optJSONObject(i);
@@ -520,6 +533,9 @@ public class ObjectController {
                         descriptMap.put("en", existingDescriptions);
                     }
                     existingDescriptions.addAll(descriptToAdd);
+                    if (tagsDescription != null){
+                        existingDescriptions.add(tagsDescription);
+                    }
                     proxy.setDcDescription(descriptMap);
                 }
             }
