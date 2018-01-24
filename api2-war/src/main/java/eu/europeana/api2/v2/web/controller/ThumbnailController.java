@@ -17,14 +17,16 @@
 
 package eu.europeana.api2.v2.web.controller;
 
+import eu.europeana.api2.v2.utils.AnnotationUtils;
 import eu.europeana.api2.v2.utils.ControllerUtils;
+import eu.europeana.api2.v2.utils.DynamicResource;
 import eu.europeana.corelib.domain.MediaFile;
 import eu.europeana.corelib.web.service.MediaStorageService;
+import eu.europeana.corelib.web.service.impl.MediaStorageServiceImpl;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -59,10 +62,15 @@ public class ThumbnailController {
     private static final String IIIF_HOST_NAME = "iiif.europeana.eu";
 
     private MediaStorageService mediaStorageService;
+    private MediaStorageService bluemixStorageService;
 
-    @Autowired
-    private ThumbnailController(MediaStorageService mediaStorageService) {
-        this.mediaStorageService = mediaStorageService;
+//    @Autowired
+//    private ThumbnailController(MediaStorageService mediaStorageService) {
+    private ThumbnailController() {
+        this.mediaStorageService = new MediaStorageServiceImpl();
+        DynamicResource dResource = new DynamicResource("bluemix_mediaStorageClient");
+        AnnotationUtils.alterAnnotationOn(MediaStorageService.class, Resource.class, dResource);
+        this.bluemixStorageService = new MediaStorageServiceImpl();
     }
 
     /**
@@ -93,8 +101,12 @@ public class ThumbnailController {
         ControllerUtils.addResponseHeaders(response);
         final HttpHeaders headers = new HttpHeaders();
 
-        // Always try to download the thumbnail from S3 first
         final String mediaFileId = computeResourceUrl(url, size);
+
+        // First try Bluemix S3 ....
+        MediaFile blueMixMediaFile = bluemixStorageService.retrieve(mediaFileId, Boolean.TRUE);
+
+        // Always try to download the thumbnail from S3 first
         MediaFile mediaFile = mediaStorageService.retrieve(mediaFileId, Boolean.TRUE);
 
         // Alternatively try to generate a IIIF thumbnail (see EA-892)
