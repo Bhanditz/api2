@@ -58,10 +58,6 @@ public class ThumbnailController {
 
     private static final String IIIF_HOST_NAME = "iiif.europeana.eu";
 
-    private MediaFile mediaFile;
-    private MediaFile bluemixMediaFile;
-    private MediaFile amazonMediaFile;
-
     @Resource(name = "amazon_S3Service")
     private MediaStorageService amazonS3Service;
 
@@ -93,39 +89,41 @@ public class ThumbnailController {
             LOG.debug("Thumbnail url = {}, size = {}, type = {}", url, size, type);
         }
 
-        byte[] mediaContent;
-        ResponseEntity result;
         ControllerUtils.addResponseHeaders(response);
         final HttpHeaders headers = new HttpHeaders();
         final String mediaFileId = computeResourceUrl(url, size);
 
         // First try Bluemix S3 ....
-        bluemixMediaFile = bluemixS3Service.retrieve(mediaFileId, Boolean.TRUE);
-
-        if (null != bluemixMediaFile) {
-            mediaFile = bluemixMediaFile;
-        } else {
-            // then try to download the thumbnail from Amazon S3 ...
-            amazonMediaFile = amazonS3Service.retrieve(mediaFileId, Boolean.TRUE);
-            if (null != amazonMediaFile) {
-                mediaFile = amazonMediaFile;
-            } else if (ThumbnailController.isIiifRecordUrl(url)) {
+        MediaFile mediaFile = bluemixS3Service.retrieve(mediaFileId, Boolean.TRUE);
+        if (mediaFile == null) {
+            // if not found then try to download the thumbnail from Amazon S3 ...
+            mediaFile = amazonS3Service.retrieve(mediaFileId, Boolean.TRUE);
+            if (mediaFile == null && ThumbnailController.isIiifRecordUrl(url)) {
                 // if still no luck, try to generate a IIIF thumbnail (see EA-892)
                 try {
                     String width = (StringUtils.equalsIgnoreCase(size, "w200") ? "200" : "400");
                     URI iiifUri = ThumbnailController.getIiifThumbnailUrl(url, width);
                     LOG.debug("IIIF url = {} ", iiifUri.getPath());
                     mediaFile = downloadImage(iiifUri);
+                    if (mediaFile != null) {
+                        LOG.debug("Thumbnail {} generated from IIIF", mediaFileId);
+                    }
                 } catch (URISyntaxException e) {
                     LOG.error("Error reading IIIF thumbnail url", e);
                 } catch (IOException io) {
                     LOG.error("Error retrieving IIIF thumbnail image", io);
                 }
+            } else {
+                LOG.debug("Thumbnail {} found on Amazon S3", mediaFileId);
             }
+        } else {
+            LOG.debug("Thumbnail {} found on IBM Cloud", mediaFileId);
         }
 
-        // Check if we have an image, if not show default 'type' icon
-        if (null == mediaFile) {
+         // Check if we have an image, if not show default 'type' icon
+         byte[] mediaContent;
+         ResponseEntity result;
+         if (mediaFile == null) {
             headers.setContentType(MediaType.IMAGE_PNG);
             mediaContent = getDefaultThumbnailForNotFoundResourceByType(type);
             result = new ResponseEntity<>(mediaContent, headers, HttpStatus.OK);
@@ -138,8 +136,7 @@ public class ThumbnailController {
             // finally check if we should return the full response, or a 304
             // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
             // (but only when clients include the If_Modified_Since header in their request)
-
-            if (( null == mediaFile.getCreatedAt() && webRequest.checkNotModified(mediaFile.getContentMd5())) ||
+            if ((mediaFile.getCreatedAt() == null && webRequest.checkNotModified(mediaFile.getContentMd5())) ||
                  (webRequest.checkNotModified(mediaFile.getContentMd5(), mediaFile.getCreatedAt().getMillis()))){
                 result = null;
             }
