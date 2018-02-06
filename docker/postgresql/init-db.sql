@@ -123,7 +123,7 @@ CREATE TABLE token (
   token character varying(64) NOT NULL,
   created bigint NOT NULL,
   email character varying(64) NOT NULL,
-  redirect character varying(256) DEFAULT 'http://europeana.eu'::character varying NOT NULL
+  redirect character varying(256) DEFAULT 'https://europeana.eu'::character varying NOT NULL
 );
 
 

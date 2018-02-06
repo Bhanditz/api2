@@ -48,8 +48,8 @@ public class SwaggerConfig {
     @Value("${api2.url}")
     private String apiUrl;
 
-    @Value("${api2.canonical.url}")
-    private String apiCanonicalUrl;
+    @Value("${portal.server}")
+    private String portalServer;
 
     @Bean
     public Docket customImplementation() {
@@ -74,26 +74,20 @@ public class SwaggerConfig {
         "This Swagger API console provides an overview of an interface to the Europeana REST API. " +
                 "You can build and test anything from the simplest search to a complex query using facetList " +
                 "such as dates, geotags and permissions. For more help and information, head to our " +
-                "comprehensive <a href=\"http://labs.europeana.eu/api/\">online documentation</a>.",
+                "comprehensive <a href=\"https://pro.europeana.eu/resources/apis\">online documentation</a>.",
                 StringUtils.isNotEmpty(version) ? version : "version unknown",
-        "http://www.europeana.eu/portal/en/rights.html",
-        "http://labs.europeana.eu/api",
+        portalServer + "portal/en/rights.html",
+        "https://pro.europeana.eu/contact-us",
         "API terms of use",
-        "http://www.europeana.eu/portal/en/rights/api.html");
+        portalServer + "portal/en/rights/api.html");
     }
 
     private String getApiPath(){
-        return "/" + (fullApiUrl().toLowerCase().contains("/api") ? "api" : "") ;
+        return "/" + (apiUrl.contains("/api") ? "api" : "") ;
     }
 
     private String getHostUrl(){
-        String hostUrl = fullApiUrl();
-        return (hostUrl.toLowerCase().contains("/api") ? hostUrl.substring(0, hostUrl.toLowerCase().indexOf("/api")) : hostUrl);
-    }
-
-    private String fullApiUrl(){
-        return StringUtils.isNotBlank(apiUrl) ? apiUrl : (
-                StringUtils.isNotBlank(apiCanonicalUrl) ? apiCanonicalUrl : "http://europeana.eu");
+        return (apiUrl.toLowerCase().contains("/api") ? apiUrl.substring(0, apiUrl.toLowerCase().indexOf("/api")) : apiUrl);
     }
 
     class BasePathAwareRelativePathProvider extends AbstractPathProvider {

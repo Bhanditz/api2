@@ -18,7 +18,7 @@ install:
                           <repository>
                               <id>europeana-libs-releases</id>
                               <name>libs-release</name>
-                              <url>http://artifactory.eanadev.org/artifactory/libs-release</url>
+                              <url>https://artifactory.eanadev.org/artifactory/libs-release</url>
                               <snapshots>
                                   <enabled>false</enabled>
                               </snapshots>
@@ -26,14 +26,14 @@ install:
                           <repository>
                               <id>europeana-libs-snapshots</id>
                               <name>libs-snapshot</name>
-                              <url>http://artifactory.eanadev.org/artifactory/libs-snapshot</url>
+                              <url>https://artifactory.eanadev.org/artifactory/libs-snapshot</url>
                           </repository>
                       </repositories>
                       <pluginRepositories>
                           <pluginRepository>
                               <id>europeana-plugins-release</id>
                               <name>plugins-release</name>
-                              <url>http://artifactory.eanadev.org/artifactory/plugins-release</url>
+                              <url>https://artifactory.eanadev.org/artifactory/plugins-release</url>
                               <snapshots>
                                   <enabled>false</enabled>
                               </snapshots>

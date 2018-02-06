@@ -21,7 +21,7 @@ The JavaDoc will be generated once the upcoming code overhaul is complete.
 ## Build
 To build (requires the [CoreLib](https://github.com/europeana/corelib) dependency):
 
-Configure your maven settings: http://artifactory.eanadev.org/artifactory/webapp/mavensettings.html?1
+Configure your maven settings: https://artifactory.eanadev.org/artifactory/webapp/mavensettings.html?1
 
 ```bash
 $ git clone https://github.com/europeana/corelib.git
