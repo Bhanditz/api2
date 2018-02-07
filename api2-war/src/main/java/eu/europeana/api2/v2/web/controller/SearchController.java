@@ -65,7 +65,7 @@ import eu.europeana.corelib.solr.bean.impl.RichBeanImpl;
 import eu.europeana.corelib.utils.StringArrayUtils;
 import eu.europeana.corelib.web.model.rights.RightReusabilityCategorizer;
 import eu.europeana.corelib.web.service.EuropeanaUrlService;
-import eu.europeana.corelib.web.support.Configuration;
+import eu.europeana.corelib.utils.Configuration;
 import eu.europeana.corelib.web.utils.NavigationUtils;
 import eu.europeana.corelib.web.utils.RequestUtils;
 import eu.europeana.crf_faketags.extractor.CommonTagExtractor;

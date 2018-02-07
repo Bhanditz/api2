@@ -48,8 +48,8 @@ public class SwaggerConfig {
     @Value("${api2.url}")
     private String apiUrl;
 
-    @Value("${portal.server}")
-    private String portalServer;
+    @Value("${portal.url}")
+    private String portalUrl;
 
     @Bean
     public Docket customImplementation() {
@@ -76,10 +76,10 @@ public class SwaggerConfig {
                 "such as dates, geotags and permissions. For more help and information, head to our " +
                 "comprehensive <a href=\"https://pro.europeana.eu/resources/apis\">online documentation</a>.",
                 StringUtils.isNotEmpty(version) ? version : "version unknown",
-        portalServer + "portal/en/rights.html",
+        portalUrl + "portal/en/rights.html",
         "https://pro.europeana.eu/contact-us",
         "API terms of use",
-        portalServer + "portal/en/rights/api.html");
+        portalUrl + "portal/en/rights/api.html");
     }
 
     private String getApiPath(){

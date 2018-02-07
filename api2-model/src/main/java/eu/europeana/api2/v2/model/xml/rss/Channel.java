@@ -17,18 +17,16 @@
 
 package eu.europeana.api2.v2.model.xml.rss;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.bind.annotation.XmlElement;
-
-import org.apache.commons.lang.StringUtils;
-
 import eu.europeana.api2.v2.model.xml.definitions.Namespaces;
 import eu.europeana.api2.v2.model.xml.rss.atom.AtomLink;
 import eu.europeana.api2.v2.model.xml.rss.opensearch.Query;
 import eu.europeana.api2.v2.model.xml.rss.opensearch.Statistic;
 import eu.europeana.corelib.web.service.EuropeanaUrlService;
+import org.apache.commons.lang.StringUtils;
+
+import javax.xml.bind.annotation.XmlElement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Willem-Jan Boogerd <www.eledge.net/contact>
@@ -37,6 +35,8 @@ import eu.europeana.corelib.web.service.EuropeanaUrlService;
 public class Channel {
 
 	private static final String DESCRIPTION_SUFFIX = " - Europeana Open Search";
+
+	protected EuropeanaUrlService urlService;
 
 	@XmlElement
 	private String title = "Europeana Open Search";
