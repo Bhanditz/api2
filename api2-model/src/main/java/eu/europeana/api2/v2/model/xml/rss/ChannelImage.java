@@ -17,12 +17,16 @@
 
 package eu.europeana.api2.v2.model.xml.rss;
 
+import eu.europeana.corelib.utils.Configuration;
 import eu.europeana.corelib.web.service.EuropeanaUrlService;
 
+import javax.annotation.Resource;
 import javax.xml.bind.annotation.XmlElement;
 
 @SuppressWarnings("unused")
 public class ChannelImage {
+	@Resource
+	private Configuration configuration;
 
 	protected EuropeanaUrlService urlService;
 
@@ -30,10 +34,10 @@ public class ChannelImage {
 	private String title = "Europeana Open Search";
 
 	@XmlElement(name = "link")
-	private String link = EuropeanaUrlService.URL_EUROPEANA;
+	private String link = configuration.getPortalUrl();
 
 	@XmlElement(name = "url")
-	private String url = EuropeanaUrlService.URL_EUROPEANA + "/portal/sp/img/europeana-logo-en.png";
+	private String url = configuration.getPortalUrl() + "/portal/sp/img/europeana-logo-en.png";
 
 
 	public ChannelImage(){

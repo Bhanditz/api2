@@ -38,7 +38,7 @@ import eu.europeana.corelib.definitions.edm.entity.EuropeanaAggregation;
 import eu.europeana.corelib.definitions.edm.entity.Place;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;
 import eu.europeana.corelib.definitions.edm.entity.Timespan;
-import eu.europeana.corelib.web.service.impl.EuropeanaUrlServiceImpl;
+import eu.europeana.corelib.web.service.EuropeanaUrlService;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
 
 @JsonPropertyOrder(alphabetic=true)
@@ -126,7 +126,7 @@ public class FullDoc {
 	private String[] enrichmentAgentLabel;
 
 	public FullDoc(FullBean bean) {
-		id = EuropeanaUrlServiceImpl.getBeanInstance().getPortalResolve(bean.getAbout());
+		id = EuropeanaUrlService.getBeanInstance().getPortalResolve(bean.getAbout());
 		europeanaCollectionName = bean.getEuropeanaCollectionName();
 		if (bean.getType() != null)
 			type = bean.getType().toString();

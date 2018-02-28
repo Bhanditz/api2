@@ -22,10 +22,11 @@
 		@XmlNs(namespaceURI = "http://purl.org/dc/terms/", prefix = "dcterms"),
 		@XmlNs(namespaceURI = "http://www.fieldtripper.com/fieldtrip_rss", prefix = "fieldtrip"),
 		@XmlNs(namespaceURI = "http://www.georss.org/georss", prefix = "georss"),
-		@XmlNs(namespaceURI = EuropeanaUrlService.URL_EUROPEANA, prefix = "europeana"),
-		@XmlNs(namespaceURI = EuropeanaUrlService.URL_EUROPEANA+"/schemas/ese/enrichment/", prefix = "enrichment") }, elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+		@XmlNs(namespaceURI = "https://www.europeana.eu/", prefix = "europeana"),
+		@XmlNs(namespaceURI = "https://www.europeana.eu/schemas/ese/enrichment/", prefix = "enrichment") }, elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+
 package eu.europeana.api2.v2.model.xml.rss;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlSchema;
-import eu.europeana.corelib.web.service.EuropeanaUrlService;
+

@@ -21,9 +21,10 @@ import eu.europeana.api2.v2.model.xml.definitions.Namespaces;
 import eu.europeana.api2.v2.model.xml.rss.atom.AtomLink;
 import eu.europeana.api2.v2.model.xml.rss.opensearch.Query;
 import eu.europeana.api2.v2.model.xml.rss.opensearch.Statistic;
-import eu.europeana.corelib.web.service.EuropeanaUrlService;
+import eu.europeana.corelib.utils.Configuration;
 import org.apache.commons.lang.StringUtils;
 
+import javax.annotation.Resource;
 import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +34,16 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 public class Channel {
+	@Resource
+	private Configuration configuration;
 
 	private static final String DESCRIPTION_SUFFIX = " - Europeana Open Search";
-
-	protected EuropeanaUrlService urlService;
 
 	@XmlElement
 	private String title = "Europeana Open Search";
 
 	@XmlElement
-	private String link = EuropeanaUrlService.URL_EUROPEANA;
+	private String link = configuration.getPortalUrl();
 
 	@XmlElement
 	private String description = "Europeana Open Search results";

@@ -17,9 +17,12 @@
 
 package eu.europeana.api2.v2.model.xml.definitions;
 
-import eu.europeana.corelib.web.service.EuropeanaUrlService;
+import eu.europeana.corelib.utils.Configuration;
+import javax.annotation.Resource;
 
 public class Namespaces {
+	@Resource
+	private static Configuration configuration;
 
 	public static final String NS_ATOM = "http://www.w3.org/2005/Atom";
 	public static final String NS_OPENSEARCH = "http://a9.com/-/spec/opensearch/1.1/";
@@ -27,7 +30,7 @@ public class Namespaces {
 	public static final String NS_DCTERM = "http://purl.org/dc/terms/";
 	public static final String NS_FIELDTRIP = "http://www.fieldtripper.com/fieldtrip_rss";
 	public static final String NS_GEORSS = "http://www.georss.org/georss";
-	public static final String NS_EUROPEANA = EuropeanaUrlService.URL_EUROPEANA;
-	public static final String NS_ENRICHMENT = EuropeanaUrlService.URL_EUROPEANA + "/schemas/ese/enrichment/";
+	public static final String NS_EUROPEANA = "https://www.europeana.eu/";
+	public static final String NS_ENRICHMENT = "https://www.europeana.eu/schemas/ese/enrichment/";
 
 }

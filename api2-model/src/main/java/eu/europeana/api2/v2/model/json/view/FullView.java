@@ -22,7 +22,6 @@ import eu.europeana.corelib.definitions.edm.entity.*;
 import eu.europeana.corelib.definitions.solr.DocType;
 import eu.europeana.corelib.utils.DateUtils;
 import eu.europeana.corelib.web.service.EuropeanaUrlService;
-import eu.europeana.corelib.web.service.impl.EuropeanaUrlServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
@@ -48,7 +47,7 @@ public class FullView implements FullBean {
     this.bean = bean;
     this.profile = profile;
     this.apiKey = apiKey;
-    europeanaUrlService = EuropeanaUrlServiceImpl.getBeanInstance();
+    europeanaUrlService = EuropeanaUrlService.getBeanInstance();
     extractTimestampCreated();
     extractTimestampUpdated();
   }

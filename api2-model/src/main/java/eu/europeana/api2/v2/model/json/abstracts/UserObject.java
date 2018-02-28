@@ -19,7 +19,7 @@ package eu.europeana.api2.v2.model.json.abstracts;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import eu.europeana.corelib.definitions.solr.DocType;
-import eu.europeana.corelib.web.service.impl.EuropeanaUrlServiceImpl;
+import eu.europeana.corelib.web.service.EuropeanaUrlService;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
@@ -72,7 +72,7 @@ public abstract class UserObject {
 
     public String getEdmPreview() {
         if (StringUtils.isNotBlank(edmPreview)) {
-            return EuropeanaUrlServiceImpl.getBeanInstance().getThumbnailUrl(edmPreview, type).toString();
+            return EuropeanaUrlService.getBeanInstance().getThumbnailUrl(edmPreview, type).toString();
         }
         return null;
     }
