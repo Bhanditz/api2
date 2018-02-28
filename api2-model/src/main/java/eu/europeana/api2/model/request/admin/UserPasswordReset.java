@@ -17,6 +17,7 @@ public class UserPasswordReset extends UserEntity {
 
     private String token;
 
+    // won't fix this one because class is deprecated
     private final String DEFAULTREDIRECTURL = "http://europeana.eu";
 
     public String getEmail() {

@@ -27,8 +27,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "searchRetrieveResponse")
 public class SrwResponse {
-	@Resource
-	private static Configuration configuration;
 
 	public static final String NS_SRW = "http://www.loc.gov/zing/srw/";
 	public static final String NS_DIAG = "http://www.loc.gov/zing/srw/diagnostic/";

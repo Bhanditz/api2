@@ -16,6 +16,7 @@ public class UserCreate extends UserEntity {
     // TODO default url?
     private String redirect;
 
+    // won't fic this one because class is deprecated
     private final String DEFAULTREDIRECTURL = "http://europeana.eu";
 
     public String getAddress() {
