@@ -130,7 +130,7 @@ public class ThumbnailController {
         } else {
             // prepare final response
             headers.setContentType(MediaType.IMAGE_JPEG);
-            mediaContent = mediaFile.getContent();
+             mediaContent = mediaFile.getContent();
             result = new ResponseEntity<>(mediaContent, headers, HttpStatus.OK);
 
             // finally check if we should return the full response, or a 304

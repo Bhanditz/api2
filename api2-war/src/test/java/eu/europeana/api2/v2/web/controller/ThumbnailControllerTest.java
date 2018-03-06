@@ -24,6 +24,8 @@ public class ThumbnailControllerTest {
 
     private static final String REGULAR_URL = "http://www.bildarchivaustria.at/Preview/15620341.jpg";
 
+    private static final boolean testBluemixVsAmazon = true;
+
     /**
      * Tests if we detect IIIF image urls correctly
      */
@@ -43,5 +45,17 @@ public class ThumbnailControllerTest {
         assertEquals(REVISED_IIIF_URL_HTTPS, ThumbnailController.getIiifThumbnailUrl(ORIG_IIIF_URL_HTTPS, "200").toString());
         assertNull(ThumbnailController.getIiifThumbnailUrl(REGULAR_URL, "400"));
         assertNull(ThumbnailController.getIiifThumbnailUrl(null, "300"));
+    }
+
+    /**
+     * Tests if we detect IIIF image urls correctly
+     */
+    @Test
+    public void bluemixVsAmazonTest() {
+        if (testBluemixVsAmazon) {
+            assertTrue(ThumbnailController.isIiifRecordUrl(ORIG_IIIF_URL_HTTP));
+            assertTrue(ThumbnailController.isIiifRecordUrl(ORIG_IIIF_URL_HTTPS));
+            assertFalse(ThumbnailController.isIiifRecordUrl(REGULAR_URL));
+        }
     }
 }
