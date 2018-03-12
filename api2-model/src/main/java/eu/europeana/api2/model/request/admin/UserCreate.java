@@ -17,7 +17,7 @@ public class UserCreate extends UserEntity {
     private String redirect;
 
     // won't fic this one because class is deprecated
-    private final String DEFAULTREDIRECTURL = "http://europeana.eu";
+    private final String DEFAULTREDIRECTURL = "https://europeana.eu";
 
     public String getAddress() {
         return address;

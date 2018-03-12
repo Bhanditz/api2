@@ -47,6 +47,7 @@ import eu.europeana.corelib.db.entity.enums.RecordType;
 import eu.europeana.corelib.db.exception.DatabaseException;
 import eu.europeana.corelib.db.exception.LimitReachedException;
 import eu.europeana.corelib.db.service.ApiKeyService;
+import eu.europeana.corelib.definitions.StaticPropertyReader;
 import eu.europeana.corelib.definitions.db.entity.relational.ApiKey;
 import eu.europeana.corelib.definitions.edm.beans.ApiBean;
 import eu.europeana.corelib.definitions.edm.beans.BriefBean;
@@ -341,7 +342,9 @@ public class SearchController {
 
 		Map<String, String> valueReplacements = new HashMap<>();
 		if (ArrayUtils.isNotEmpty(reusabilities)) {
-			valueReplacements = RightReusabilityCategorizer.mapValueReplacements(reusabilities, true);
+		    // this is to ensure that RightsOption uses the runtime properties in the StaticPropertyReader
+            StaticPropertyReader.loadRuntimeProps();
+            valueReplacements = RightReusabilityCategorizer.mapValueReplacements(reusabilities, true);
             refinementArray = (String[]) ArrayUtils.addAll(
                     refinementArray,
                     valueReplacements.keySet().toArray(new String[valueReplacements.keySet().size()])
