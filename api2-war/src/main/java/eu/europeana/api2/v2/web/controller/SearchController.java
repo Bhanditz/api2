@@ -152,6 +152,10 @@ public class SearchController {
         // do apikey check before anything else
         LimitResponse limitResponse = apiKeyUtils.checkLimit(wskey, request.getRequestURL().toString(), RecordType.SEARCH, profile);
 
+        // this is to ensure that RightsOption and SearchServiceImpl use the runtime properties
+        // in the StaticPropertyReader
+        StaticPropertyReader.loadRuntimeProps();
+
         // check query parameter
         if (StringUtils.isBlank(queryString)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -342,8 +346,6 @@ public class SearchController {
 
 		Map<String, String> valueReplacements = new HashMap<>();
 		if (ArrayUtils.isNotEmpty(reusabilities)) {
-		    // this is to ensure that RightsOption uses the runtime properties in the StaticPropertyReader
-            StaticPropertyReader.loadRuntimeProps();
             valueReplacements = RightReusabilityCategorizer.mapValueReplacements(reusabilities, true);
             refinementArray = (String[]) ArrayUtils.addAll(
                     refinementArray,
