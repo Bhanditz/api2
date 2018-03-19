@@ -18,21 +18,45 @@
 package eu.europeana.api2.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Helper class to generate Json output
+ */
 public class JsonUtils {
 
-    private static final Logger log = Logger.getLogger(JsonUtils.class);
+    private static final Logger LOG = LogManager.getLogger(JsonUtils.class);
+
+    /** Create a single objectMapper we can reuse because that's more efficient,
+     * https://github.com/FasterXML/jackson-docs/wiki/Presentation:-Jackson-Performance
+     */
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     public static ModelAndView toJson(Object object) {
         return toJson(object, null);
+    }
+
+    public static ModelAndView toJson(Object object, String callback) {
+        try {
+            // Note that writeValueAsString is the slowest way of returning results. It's probably faster to use the
+            // response outputstream, but that would require changing the way all API controllers return data
+            return toJson(OBJECT_MAPPER.writeValueAsString(object), callback);
+        } catch (IOException e) {
+            String msg = "Json Generation Exception: " + e.getMessage();
+            LOG.error(msg, e);
+            ModelAndView error = toJson(msg, callback);
+            error.addObject("success", false);
+            error.addObject("error", e.getMessage());
+            return error;
+        }
     }
 
     public static ModelAndView toJson(String json, String callback) {
@@ -46,21 +70,5 @@ public class JsonUtils {
         return new ModelAndView(resultPage, model);
     }
 
-    public static ModelAndView toJson(Object object, String callback) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        try {
-            return toJson(objectMapper.writeValueAsString(object), callback);
-        } catch (JsonProcessingException e) {
-            log.error("Json Generation Exception: " + e.getMessage(), e);
-        }
-        // TODO report error...
-        String resultPage = "json";
-        Map<String, Object> model = new LinkedHashMap<>();
-        if (StringUtils.isNotBlank(callback)) {
-            resultPage = "jsonp";
-            model.put("callback", callback);
-        }
-        return new ModelAndView(resultPage, model);
-    }
+
 }
