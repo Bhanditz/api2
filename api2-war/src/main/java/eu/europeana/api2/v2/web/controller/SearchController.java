@@ -160,6 +160,8 @@ public class SearchController {
                 wickie.toString();
             } catch (NullPointerException npe) {
                 LOG.error("Grutjes", npe);
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return JsonUtils.toJson(new ApiError("", "Grutjes"), callback);
             }
         }
 //        String[] refinementAndThemeArray;
