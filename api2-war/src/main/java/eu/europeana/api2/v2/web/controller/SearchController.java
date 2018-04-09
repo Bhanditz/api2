@@ -72,6 +72,7 @@ import eu.europeana.crf_faketags.extractor.CommonTagExtractor;
 import eu.europeana.crf_faketags.utils.FakeTagsUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import jena.query;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -152,12 +153,15 @@ public class SearchController {
 
         // do apikey check before anything else
         LimitResponse limitResponse = apiKeyUtils.checkLimit(wskey, request.getRequestURL().toString(), RecordType.SEARCH, profile);
-//        try {
-//            Integer wickie = null;
-//            wickie.toString();
-//        } catch (NullPointerException npe) {
-//            LOG.error("Grutjes: ", npe);
-//        }
+
+        if (queryString.equalsIgnoreCase("grutjes")) {
+            try {
+                Integer wickie = null;
+                wickie.toString();
+            } catch (NullPointerException npe) {
+                LOG.error("Grutjes: ", npe);
+            }
+        }
 //        String[] refinementAndThemeArray;
 
         // check query parameter
