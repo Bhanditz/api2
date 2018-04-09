@@ -152,7 +152,12 @@ public class SearchController {
 
         // do apikey check before anything else
         LimitResponse limitResponse = apiKeyUtils.checkLimit(wskey, request.getRequestURL().toString(), RecordType.SEARCH, profile);
-
+//        try {
+//            Integer wickie = null;
+//            wickie.toString();
+//        } catch (NullPointerException npe) {
+//            LOG.error("Grutjes: ", npe);
+//        }
 //        String[] refinementAndThemeArray;
 
         // check query parameter

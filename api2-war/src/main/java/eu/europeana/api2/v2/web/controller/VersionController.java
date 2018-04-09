@@ -61,4 +61,37 @@ public class VersionController {
         return result;
     }
 
+    /**
+     * Temp endpoint to test different log4j configs to solve the ELK stacktrace handling problem
+     *
+     * @return ModelAndView
+     */
+    @RequestMapping(value = {"version", "/v2/errorlog"}, method = {RequestMethod.GET})
+    public VersionInfoResult errorLog() {
+        VersionInfoResult knolraap = new VersionInfoResult();
+
+        // We start with a simple case - create an error from only a string, by way of baseline case.
+        LOG.error("---[1]--> This error was created from a string only");
+
+        // Now, let's move to something more troubling. Let's fool an InputStream to read some nonexisting file. Ha!
+        InputStream luckyLuke = this.getClass().getResourceAsStream("/../../wickiewillakoeckebacke.piasserij");
+
+        try (BufferedReader averell = new BufferedReader(new InputStreamReader(luckyLuke))) {
+            System.out.println("This line will never be output");
+        } catch (IOException e) {
+            // throwing the message as string only
+            LOG.error("---[2]--> passing e.getMessage() after this arrow --> " + e.getMessage());
+            // passing the e itself as Throwable
+            LOG.error("---[3]--> passing the e itself as Throwable", e);
+            // passing the e.fillInStackTrace() as Throwable
+            LOG.error("---[4]--> passing the e.fillInStackTrace() as Throwable", e.fillInStackTrace());
+            // passing the e.fillInStackTrace() as Throwable
+            LOG.error("---[5]--> Here, have the whole thing as toString() -->" + e.toString());
+        }
+
+
+
+        return knolraap;
+    }
+
 }
