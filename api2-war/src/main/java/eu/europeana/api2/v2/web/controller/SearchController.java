@@ -159,7 +159,7 @@ public class SearchController {
                 Integer wickie = null;
                 wickie.toString();
             } catch (NullPointerException npe) {
-                LOG.error("Grutjes: ", npe);
+                LOG.error("Grutjes", npe);
             }
         }
 //        String[] refinementAndThemeArray;
