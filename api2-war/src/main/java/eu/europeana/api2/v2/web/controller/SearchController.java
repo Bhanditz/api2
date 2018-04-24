@@ -159,7 +159,7 @@ public class SearchController {
                 Integer wickie = null;
                 wickie.toString();
             } catch (NullPointerException npe) {
-                LOG.error("Grutjes", npe);
+                LOG.error("Grutjes! Moeinoukieke: " + Arrays.toString(npe.getStackTrace()));
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return JsonUtils.toJson(new ApiError("", "Grutjes"), callback);
             }
