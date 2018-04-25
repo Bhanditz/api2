@@ -102,9 +102,6 @@ import java.util.*;
 @Api(tags = {"Search"}, description = " ")
 public class SearchController {
 
-
-//    private static final String testlogmsg = "Grutjes! Moeinoukieke! java.lang.NullPointerException at eu.europeana.api2.v2.web.controller.SearchController.searchJson(SearchController.java:160) at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) at java.lang.reflect.Method.invoke(Method.java:498) at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:221) at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:136) at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:110) at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:817) at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:731) at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85) at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:959) at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:893) at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:968) at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:859) at javax.servlet.http.HttpServlet.service(HttpServlet.java:622) at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:844) at javax.servlet.http.HttpServlet.service(HttpServlet.java:729) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:291) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:186) at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:160) at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:346) at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:262) at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:239) at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206) at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:212) at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:106) at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:502) at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:141) at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:79) at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:616) at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:88) at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:521) at org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1096) at org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:674) at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1500) at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.run(NioEndpoint.java:1456) at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) at java.lang.Thread.run(Thread.java:745) ";
-
 	private static final Logger LOG = LogManager.getLogger(SearchController.class);
 
     @Resource
@@ -158,25 +155,15 @@ public class SearchController {
         // do apikey check before anything else
         LimitResponse limitResponse = apiKeyUtils.checkLimit(wskey, request.getRequestURL().toString(), RecordType.SEARCH, profile);
 
+        //TODO for demo purposes only; do not merge when done
         if (queryString.equalsIgnoreCase("grutjes")) {
             try {
                 Integer wickie = null;
                 wickie.toString();
             } catch (NullPointerException npe) {
                 LOG.error("Grutjes! Moeinoukieke!", npe);
-//                LOG.error(testlogmsg);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return JsonUtils.toJson(new ApiError("", "Grutjes"), callback);
-            }
-        }
-        if (queryString.equalsIgnoreCase("gratjes")) {
-            try {
-                Integer wackie = null;
-                wackie.toString();
-            } catch (NullPointerException npe) {
-                LOG.error("Gratjes! Wadratjemienoe!" + ExceptionUtils.getStackTrace(npe));
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return JsonUtils.toJson(new ApiError("", "Gratjes"), callback);
             }
         }
 //        String[] refinementAndThemeArray;
