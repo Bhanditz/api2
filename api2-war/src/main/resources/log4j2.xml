@@ -9,7 +9,8 @@
                 <alwaysWriteExceptions>false</alwaysWriteExceptions>
                 <!--<pattern>"{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}&quot;,&quot;level&quot;:&quot;%-5p&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;class&quot;:&quot;%C&quot;, &quot;code_line_number&quot;:&quot;%L&quot;,&quot;message&quot;:&quot;%m%customThrowable&quot;}%n"</pattern>-->
                 <!--<pattern>"{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}&quot;,&quot;level&quot;:&quot;%-5p&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;class&quot;:&quot;%C&quot;, &quot;code_line_number&quot;:&quot;%L&quot;,&quot;message&quot;:&quot;%m %throwable{separator( )}&quot;}%n"</pattern>-->
-                <pattern>"{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}&quot;,&quot;level&quot;:&quot;%-5p&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;class&quot;:&quot;%C&quot;, &quot;code_line_number&quot;:&quot;%L&quot;,&quot;message&quot;:&quot;%m %replace{%throwable}{[\r\n\t]{1,2}}{ }&quot;}%n"</pattern>
+                <!--<pattern>"{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}&quot;,&quot;level&quot;:&quot;%-5p&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;class&quot;:&quot;%C&quot;, &quot;code_line_number&quot;:&quot;%L&quot;,&quot;message&quot;:&quot;%replace{%throwable}{[\r\n\t]{1,2}}{ }&quot;}%n"</pattern>-->
+                <pattern>{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}&quot;,&quot;level&quot;:&quot;%-5p&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;class&quot;:&quot;%C&quot;, &quot;code_line_number&quot;:&quot;%L&quot;,&quot;message&quot;:&quot;%replace{%m}{[\r\n\t]{1,2}}{ }&quot;}%n</pattern>
 
 
             </PatternLayout>
