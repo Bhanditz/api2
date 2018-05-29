@@ -161,9 +161,9 @@ public class SearchController {
                 Integer wickie = null;
                 wickie.toString();
             } catch (NullPointerException npe) {
-                LOG.error("Grutjes! Moeinoukieke!", npe);
+                LOG.error("\"Grutjes\", zei tante Jo uit Hengelo!", npe);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return JsonUtils.toJson(new ApiError("", "Grutjes"), callback);
+                return JsonUtils.toJson(new ApiError("", "Grutjes! Wadratjemienoe!"), callback);
             }
         }
 //        String[] refinementAndThemeArray;

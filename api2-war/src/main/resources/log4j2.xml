@@ -2,23 +2,14 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <!-- Use the JSON layout pattern for production (logging to ELK) -->
-            <!--<PatternLayout pattern="{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}&quot;,&quot;level&quot;:&quot;%-5p&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;class&quot;:&quot;%C&quot;, &quot;code_line_number&quot;:&quot;%L&quot;,&quot;message&quot;:&quot;%m&quot;}%n" />-->
-
-            <!--(EA-773) The CustomThrowableConverter replaces \n with a whitespace and removes the \t (tab) -->
-            <!--See eu.europeana.corelib.utils.CustomThrowableConverter -->
+            <!-- Use a patternLayout formatted as JSON for production (logging to ELK) -->
             <PatternLayout>
                 <alwaysWriteExceptions>false</alwaysWriteExceptions>
-                <pattern>{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}&quot;,&quot;level&quot;:&quot;%-5p&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;class&quot;:&quot;%C&quot;, &quot;code_line_number&quot;:&quot;%L&quot;,&quot;message&quot;:&quot;%m %customThrowable&quot;}%n</pattern>
+                <pattern>{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}&quot;,&quot;level&quot;:&quot;%-5p&quot;,&quot;thread&quot;:&quot;%t&quot;,&quot;class&quot;:&quot;%C&quot;, &quot;code_line_number&quot;:&quot;%L&quot;,&quot;message&quot;:&quot;%replace{%m %throwable}{[\n\t"]}{ }&quot;}%n</pattern>
             </PatternLayout>
             <!-- Use this pattern for local debugging -->
             <!--<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue} %logger{36} - %msg%n" />-->
-            <!--<JsonLayout properties="true" locationInfo="true" stacktraceAsString="true" />-->
         </Console>
-        <!--<alwaysWriteExceptions>false</alwaysWriteExceptions>-->
-        <!--<pattern>%d{yyyy-MM-dd HH:mm:ss} %X{AWSRequestId} %-5p %c{1}:%L - %msg %customThrowable %n</pattern>-->
-
-
     </Appenders>
     <Loggers>
         <Root level="INFO">
