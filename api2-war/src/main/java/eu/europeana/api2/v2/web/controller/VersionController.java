@@ -97,6 +97,8 @@ public class VersionController {
 
     @RequestMapping(value = {"errorlog2", "/v2/errorlog2"}, method = {RequestMethod.GET})
     public VersionInfoResult errorLog2() {
+        LOG.error("logging a quote \" more text");
+
         // just throw an error and let the globalerrhandler deal with it
         throw new RuntimeException("test2");
     }
