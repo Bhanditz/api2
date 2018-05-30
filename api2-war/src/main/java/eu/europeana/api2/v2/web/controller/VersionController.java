@@ -61,46 +61,4 @@ public class VersionController {
         return result;
     }
 
-    /**
-     * Temp endpoint to test different log4j configs to solve the ELK stacktrace handling problem
-     *
-     * @return ModelAndView
-     */
-    @RequestMapping(value = {"errorlog", "/v2/errorlog"}, method = {RequestMethod.GET})
-    public VersionInfoResult errorLog() {
-        VersionInfoResult knolraap = new VersionInfoResult();
-
-        // We start with a simple case - create an error from only a string, by way of baseline case.
-        LOG.error("---[1]--> This error was created from a string only");
-
-        // Now, let's move to something more troubling. Let's fool an InputStream to read some nonexisting file. Ha!
-        InputStream luckyLuke = this.getClass().getResourceAsStream("/../../wickiewillakoeckebacke.piasserij");
-
-        try {
-            BufferedReader averell = new BufferedReader(new InputStreamReader(luckyLuke));
-            System.out.println("This line will never be output");
-        } catch (Exception e) {
-            LOG.error("---[2]--> passing the e itself as Throwable", e);
-            // throwing the message as string only
-            LOG.error("---[3]--> passing e.getMessage() after this arrow --> " + e.getMessage());
-            // passing the e itself as Throwable
-            // passing the e.fillInStackTrace() as Throwable
-            LOG.error("---[4]--> passing the e.fillInStackTrace() as Throwable", e.fillInStackTrace());
-            // passing the e.fillInStackTrace() as Throwable
-            LOG.error("---[5]--> Here, have the whole thing as toString() -->" + e.toString());
-        }
-
-
-
-        return knolraap;
-    }
-
-    @RequestMapping(value = {"errorlog2", "/v2/errorlog2"}, method = {RequestMethod.GET})
-    public VersionInfoResult errorLog2() {
-        LOG.error("logging a quote \" more text");
-
-        // just throw an error and let the globalerrhandler deal with it
-        throw new RuntimeException("test2");
-    }
-
 }

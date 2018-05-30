@@ -155,17 +155,6 @@ public class SearchController {
         // do apikey check before anything else
         LimitResponse limitResponse = apiKeyUtils.checkLimit(wskey, request.getRequestURL().toString(), RecordType.SEARCH, profile);
 
-        //TODO for demo purposes only; do not merge when done
-        if (queryString.equalsIgnoreCase("grutjes")) {
-            try {
-                Integer wickie = null;
-                wickie.toString();
-            } catch (NullPointerException npe) {
-                LOG.error("\"Grutjes\", zei tante Jo uit Hengelo!", npe);
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return JsonUtils.toJson(new ApiError("", "Grutjes! Wadratjemienoe!"), callback);
-            }
-        }
 //        String[] refinementAndThemeArray;
 
         // check query parameter
