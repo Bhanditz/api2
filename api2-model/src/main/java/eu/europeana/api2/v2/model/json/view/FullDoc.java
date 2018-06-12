@@ -339,7 +339,7 @@ public class FullDoc {
     }
 
 	/*
-     * public Map<String, Object> asMap() { List<MetaDataFieldPresentation>
+	 * public Map<String, Object> asMap() { List<MetaDataFieldPresentation>
 	 * fields = new ArrayList<MetaDataFieldPresentation>();
 	 * 
 	 * 
