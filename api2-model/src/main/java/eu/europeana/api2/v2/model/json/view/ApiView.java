@@ -188,8 +188,9 @@ public class ApiView extends BriefView implements ApiBean {
         return europeanaCollectionName;
     }
 
+    // EA-1155
     public String[] getEdmDatasetName() {
-        return getEuropeanaCollectionName();
+        return europeanaCollectionName;
     }
 
     @Override

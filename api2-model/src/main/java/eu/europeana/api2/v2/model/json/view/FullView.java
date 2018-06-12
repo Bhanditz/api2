@@ -231,8 +231,9 @@ public class FullView implements FullBean {
     return bean.getEuropeanaCollectionName();
   }
 
+  // EA-1155
   public String[] getEdmDatasetName() {
-    return getEuropeanaCollectionName();
+    return bean.getEuropeanaCollectionName();
   }
 
   @Override
@@ -279,6 +280,7 @@ public class FullView implements FullBean {
 
   @Override
   public void setEuropeanaCollectionName(String[] europeanaCollectionName) {}
+
 
   public void extractTimestampCreated() {
     if (timestampCreated == null) {
