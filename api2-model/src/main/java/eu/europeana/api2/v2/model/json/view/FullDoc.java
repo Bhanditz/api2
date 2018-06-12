@@ -289,7 +289,7 @@ public class FullDoc {
 			addValue("europeana:uri", getId());
 			addValue("europeana:country", getEuropeanaCountry());
 			addValue("europeana:provider", getEuropeanaProvider());
-			addValue("europeana:collectionName", getEuropeanaCollectionName());
+//			addValue("europeana:collectionName", getEuropeanaCollectionName());
 			addValue("edm:datasetName", getEuropeanaCollectionName());
 			addValue("europeana:isShownAt", getEuropeanaIsShownAt());
 			addValue("europeana:isShownBy", getEuropeanaIsShownBy());
