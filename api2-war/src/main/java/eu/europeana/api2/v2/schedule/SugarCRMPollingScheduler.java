@@ -47,8 +47,9 @@ public class SugarCRMPollingScheduler {
     @PostConstruct
     public void scheduleFirstRun() {
         try {
+            LOG.info("Re-populating MongoDB SugarCRM cache");
             sugarCRMImporter.populateRepositoryFromScratch();
-        } catch (JIXBQueryResultException e) {
+        } catch (Exception e) {
             LOG.error("Re-population of MongoDB Cache from SugarCRM failed: {}", e.getMessage(), e);
         }
         firstRunComplete = true;
@@ -60,7 +61,7 @@ public class SugarCRMPollingScheduler {
             try {
                 sugarCRMImporter.pollProviders();
                 sugarCRMImporter.pollCollections();
-            } catch (JIXBQueryResultException e) {
+            } catch (Exception e) {
                 LOG.error("Scheduled update for provider/collections failed: {}", e.getMessage(), e);
             }
         }
