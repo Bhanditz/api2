@@ -59,11 +59,6 @@ public class SugarCRMPollingScheduler {
         firstRunComplete = true;
     }
 
-    @Scheduled(fixedRate = 60_000)
-    public void debugJdbcThreadUsage() {
-        LOG.info("Postgres threads: idle = {}, active = {}", postgres.getNumIdle(), postgres.getNumActive());
-    }
-
     @Scheduled(fixedRate = 300_000)
     public void frequentUpdateTask() {
         if (firstRunComplete) {

@@ -19,6 +19,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -74,15 +75,22 @@ public class AppConfig {
             LOG.error("Error checking database connection", e);
         }
 
-        LOG.info("Postgres Datasource: minIdle = {}", this.postgres.getMaxIdle());
-        LOG.info("Postgres Datasource: getInitialSize = {}", this.postgres.getInitialSize());
+
+        LOG.info("Postgres Datasource: getMaxAge = {}", this.postgres.getMaxAge());
+        LOG.info("Postgres Datasource: getRemoveAbandonedCount = {}", this.postgres.getRemoveAbandonedCount());
+        LOG.info("Postgres Datasource: getRemoveAbandonedTimeout = {}", this.postgres.getRemoveAbandonedTimeout());
+        LOG.info("Postgres Datasource: getAbandonWhenPercentageFull() = {}", this.postgres.getAbandonWhenPercentageFull());
+
         LOG.info("Postgres Datasource: getMaxWait = {}", this.postgres.getMaxWait());
         LOG.info("Postgres Datasource: getMinEvictableIdleTimeMillis() = {}", this.postgres.getMinEvictableIdleTimeMillis());
         LOG.info("Postgres Datasource: getTimeBetweenEvictionRunsMillis = {}", this.postgres.getTimeBetweenEvictionRunsMillis());
+
         LOG.info("Postgres Datasource: getValidationQuery = {}", this.postgres.getValidationQuery());
         LOG.info("Postgres Datasource: getValidationQueryTimeout = {}", this.postgres.getValidationQueryTimeout());
+        LOG.info("Postgres Datasource: getValidationInterval = {}", this.postgres.getValidationInterval());
+        LOG.info("Postgres Datasource: getLogValidationErrors = {}", this.postgres.getLogValidationErrors());
+
         LOG.info("Postgres Datasource: getDefaultReadOnly = {}", this.postgres.getDefaultReadOnly());
-        LOG.info("Postgres Datasource: getDefaultAutoCommit = {}", this.postgres.getDefaultAutoCommit());
         LOG.info("Postgres Datasource: getDefaultAutoCommit = {}", this.postgres.getDefaultAutoCommit());
         LOG.info("Postgres Datasource: getNumActive = {}, getNumIdle = {}, getNumTestsPerEvictionRun = {}", this.postgres.getNumActive()
                 , this.postgres.getNumIdle(), this.postgres.getNumTestsPerEvictionRun());
@@ -90,9 +98,27 @@ public class AppConfig {
         // When deploying on CF, the Spring Auto-reconfiguration framework will ignore all original datasource properties
         // and reset maxIdle and maxActive to 4 (see also the warning in the logs). We need to override these properties.
         // We are setting to 16, so we can scale up to 6 instances (postgres has threshold of 100 connections)
-        this.postgres.setMaxIdle(16);
+        this.postgres.setMinIdle(1);
+        this.postgres.setMaxIdle(5);
         this.postgres.setMaxActive(16);
-        LOG.info("Postgres Datasource: maxIdle = {}, maxActive = {} ", this.postgres.getMaxIdle(), this.postgres.getMaxActive());
+        LOG.info("Postgres Datasource: minIdle = {}, maxIdle = {}, maxActive = {} ", this.postgres.getMinIdle(),
+                this.postgres.getMaxIdle(), this.postgres.getMaxActive());
+
+        // enable clean-up of threads that run longer than 120 secs
+        this.postgres.setTestOnBorrow(true);
+        this.postgres.setRemoveAbandoned(true);
+        this.postgres.setRemoveAbandonedTimeout(120); // sec
+        this.postgres.setLogAbandoned(true);
+        LOG.info("Postgres Datasource: isTestOnBorrow = {}, isRemoveAbandoned = {}, removeAbandonedTimeout = {}, logAbandoned = {} ",
+                this.postgres.isTestOnBorrow(), this.postgres.isRemoveAbandoned(), this.postgres.getRemoveAbandonedTimeout(),
+                this.postgres.isLogAbandoned());
+
+    }
+
+    @Scheduled(fixedRate = 60_000)
+    public void debugJdbcThreadUsage() {
+        LOG.info("Postgres threads: idle = {}, active = {}, removeAbandoned = {}",
+                postgres.getNumIdle(), postgres.getNumActive(), postgres.getRemoveAbandonedCount());
     }
 
     /**
