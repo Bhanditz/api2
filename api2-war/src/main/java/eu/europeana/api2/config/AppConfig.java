@@ -95,15 +95,16 @@ public class AppConfig {
         LOG.info("Programmatically overidding settings:");
         this.postgres.setMinIdle(1);
         this.postgres.setMaxIdle(5);
-        this.postgres.setMaxActive(10);
+        this.postgres.setMaxActive(16);
         LOG.info("  minIdle = {}, maxIdle = {}, maxActive = {} ", this.postgres.getMinIdle(),
                 this.postgres.getMaxIdle(), this.postgres.getMaxActive());
 
-        // enable clean-up of threads that run longer than 120 secs
-        this.postgres.setTestOnBorrow(true);
-        this.postgres.setRemoveAbandoned(true);
-        this.postgres.setRemoveAbandonedTimeout(120); // sec
-        this.postgres.setLogAbandoned(true);
+        // enable clean-up of threads that run longer than 120 secs -> this can leave sessions hanging on the postgresql
+        // database side.
+//        this.postgres.setTestOnBorrow(true);
+//        this.postgres.setRemoveAbandoned(true);
+//        this.postgres.setRemoveAbandonedTimeout(120); // sec
+//        this.postgres.setLogAbandoned(true);
         LOG.info("  isTestOnBorrow = {}, isRemoveAbandoned = {}, removeAbandonedTimeout = {}, logAbandoned = {} ",
                 this.postgres.isTestOnBorrow(), this.postgres.isRemoveAbandoned(), this.postgres.getRemoveAbandonedTimeout(),
                 this.postgres.isLogAbandoned());
