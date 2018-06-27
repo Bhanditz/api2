@@ -100,11 +100,11 @@ public class AppConfig {
                 this.postgres.getMaxIdle(), this.postgres.getMaxActive());
 
         // enable clean-up of threads that run longer than 120 secs -> this can leave sessions hanging on the postgresql
-        // database side.
-//        this.postgres.setTestOnBorrow(true);
-//        this.postgres.setRemoveAbandoned(true);
-//        this.postgres.setRemoveAbandonedTimeout(120); // sec
-//        this.postgres.setLogAbandoned(true);
+        // database side!!
+        //    this.postgres.setTestOnBorrow(true);
+        //    this.postgres.setRemoveAbandoned(true);
+        //    this.postgres.setRemoveAbandonedTimeout(120); // sec
+        //    this.postgres.setLogAbandoned(true);
         LOG.info("  isTestOnBorrow = {}, isRemoveAbandoned = {}, removeAbandonedTimeout = {}, logAbandoned = {} ",
                 this.postgres.isTestOnBorrow(), this.postgres.isRemoveAbandoned(), this.postgres.getRemoveAbandonedTimeout(),
                 this.postgres.isLogAbandoned());
@@ -114,11 +114,13 @@ public class AppConfig {
     @Scheduled(fixedRate = 60_000)
     public void debugJdbcThreadUsage() {
         long nrAbandoned = postgres.getRemoveAbandonedCount();
-        if (nrAbandoned == 0) {
+        long nrActive = postgres.getNumActive();
+        if (nrAbandoned == 0 && nrActive < 4) {
             LOG.info("Postgres threads: idle = {}, active = {}, removeAbandoned = {}",
                     postgres.getNumIdle(), postgres.getNumActive(), nrAbandoned);
         } else {
-            // removeAbanondedCount > 0 means hanging threads were removed so log with error status
+            // normally nrActive never goes above 2 in production, so nrActive > 4 means very likely hanging threads
+            // removeAbanondedCount > 0 means hanging threads were removed
             LOG.error("Postgres threads: idle = {}, active = {}, removeAbandoned = {}",
                     postgres.getNumIdle(), postgres.getNumActive(), nrAbandoned);
         }
