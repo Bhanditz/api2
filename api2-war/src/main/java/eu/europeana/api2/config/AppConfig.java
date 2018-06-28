@@ -92,7 +92,7 @@ public class AppConfig {
         // When deploying on CF, the Spring Auto-reconfiguration framework will ignore all original datasource properties
         // and reset maxIdle and maxActive to 4 (see also the warning in the logs). We need to override these properties.
         // We are setting to 10, so we can scale up to 10 instances (postgres has threshold of 100 connections)
-        LOG.info("Programmatically overidding settings:");
+        LOG.info("Programmatically overriding settings:");
         this.postgres.setMinIdle(1);
         this.postgres.setMaxIdle(5);
         this.postgres.setMaxActive(16);
@@ -101,7 +101,7 @@ public class AppConfig {
 
         // enable clean-up of threads that run longer than 120 secs -> this can leave sessions hanging on the postgresql
         // database side!!
-        //    this.postgres.setTestOnBorrow(true);
+        this.postgres.setTestOnBorrow(true);
         //    this.postgres.setRemoveAbandoned(true);
         //    this.postgres.setRemoveAbandonedTimeout(120); // sec
         //    this.postgres.setLogAbandoned(true);
