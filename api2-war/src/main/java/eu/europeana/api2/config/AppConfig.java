@@ -24,6 +24,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -93,6 +95,8 @@ public class AppConfig {
         // and reset maxIdle and maxActive to 4 (see also the warning in the logs). We need to override these properties.
         // We are setting to 10, so we can scale up to 10 instances (postgres has threshold of 100 connections)
         LOG.info("Programmatically overriding settings:");
+        this.postgres.setDefaultReadOnly(true);
+        LOG.info("  defaultReadOnly = {}", this.postgres.getDefaultReadOnly());
         this.postgres.setMinIdle(1);
         this.postgres.setMaxIdle(5);
         this.postgres.setMaxActive(16);
@@ -115,16 +119,34 @@ public class AppConfig {
     public void debugJdbcThreadUsage() {
         long nrAbandoned = postgres.getRemoveAbandonedCount();
         long nrActive = postgres.getNumActive();
+        long nrIdle = postgres.getIdle();
+        Integer dbSessions = getNrSessionsOnPostgresDb();
         if (nrAbandoned == 0 && nrActive < 4) {
-            LOG.info("Postgres threads: idle = {}, active = {}, removeAbandoned = {}",
-                    postgres.getNumIdle(), postgres.getNumActive(), nrAbandoned);
+            LOG.info("Postgres threads: API idle = {}, API active = {}, API removeAbandoned = {}, PostgresDb sessions = {}",
+                    nrIdle, nrActive, nrAbandoned, dbSessions);
         } else {
             // normally nrActive never goes above 2 in production, so nrActive > 4 means very likely hanging threads
             // removeAbanondedCount > 0 means hanging threads were removed
-            LOG.error("Postgres threads: idle = {}, active = {}, removeAbandoned = {}",
-                    postgres.getNumIdle(), postgres.getNumActive(), nrAbandoned);
+            LOG.error("Postgres threads: API idle = {}, API active = {}, API removeAbandoned = {}, PostgresDb sessions = {}",
+                    nrIdle, nrActive, nrAbandoned, dbSessions);
         }
+    }
 
+    private Integer getNrSessionsOnPostgresDb() {
+        Integer result = null;
+        try (Connection con = postgres.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT count(pid) FROM pg_stat_activity WHERE application_name = ?")) {
+            ps.setString(1, "PostgreSQL JDBC Driver");
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                result = rs.getInt(1);
+            } else {
+                LOG.error("Postgres database didn't return session data");
+            }
+        } catch (SQLException e) {
+            LOG.error("Error checking number of sessions in postgres database", e);
+        }
+        return result;
     }
 
     /**
