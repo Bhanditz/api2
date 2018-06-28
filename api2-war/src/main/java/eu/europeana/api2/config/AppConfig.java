@@ -46,6 +46,11 @@ public class AppConfig {
 
     private static final Logger LOG = LogManager.getLogger(AppConfig.class);
 
+    private static final String APP_NAME_IN_POSTGRES = "PostgreSQL JDBC Driver";
+    private static final String QUERY_FILTER_STALE_SESSION =
+                    " AND state in ('idle', 'idle in transaction', 'idle in transaction (aborted)', 'disabled')" +
+                    " AND current_timestamp - state_change > interval '5 minutes'";
+
     @Value("${s3.key}")
     private String key;
     @Value("${s3.secret}")
@@ -54,6 +59,9 @@ public class AppConfig {
     private String region;
     @Value("${s3.bucket}")
     private String bucket;
+
+    @Value("${postgres.max.stale.sessions:}")
+    private Integer pgMaxStaleSessions;
 
     @Resource(name = "corelib_db_dataSource")
     private DataSource postgres;
@@ -120,23 +128,32 @@ public class AppConfig {
         long nrAbandoned = postgres.getRemoveAbandonedCount();
         long nrActive = postgres.getNumActive();
         long nrIdle = postgres.getIdle();
-        Integer dbSessions = getNrSessionsOnPostgresDb();
-        if (nrAbandoned == 0 && nrActive < 4) {
-            LOG.info("Postgres threads: API idle = {}, API active = {}, API removeAbandoned = {}, PostgresDb sessions = {}",
-                    nrIdle, nrActive, nrAbandoned, dbSessions);
+        Integer dbTotalSessions = getNrSessionsOnPostgresDb(false);
+        Integer dbStaleSession = getNrSessionsOnPostgresDb(true);
+        if (nrAbandoned == 0 && nrActive < 4 && dbStaleSession == 0) {
+            LOG.info("Postgres threads: API idle = {}, active = {}, removeAbandoned = {} - PostgresDb totalSessions = {}, staleSessions = {})",
+                    nrIdle, nrActive, nrAbandoned, dbTotalSessions, dbStaleSession);
         } else {
             // normally nrActive never goes above 2 in production, so nrActive > 4 means very likely hanging threads
             // removeAbanondedCount > 0 means hanging threads were removed
-            LOG.error("Postgres threads: API idle = {}, API active = {}, API removeAbandoned = {}, PostgresDb sessions = {}",
-                    nrIdle, nrActive, nrAbandoned, dbSessions);
+            LOG.error("Postgres threads: API idle = {}, active = {}, removeAbandoned = {} - PostgresDb totalSessions = {}, staleSessions = {})",
+                    nrIdle, nrActive, nrAbandoned, dbTotalSessions, dbStaleSession);
+        }
+
+        if (pgMaxStaleSessions != null && dbStaleSession > pgMaxStaleSessions) {
+            LOG.warn("{} stale postgres sessions terminated", removeHangingSessionOnPostgresDb());
         }
     }
 
-    private Integer getNrSessionsOnPostgresDb() {
+    private Integer getNrSessionsOnPostgresDb(boolean staleOnly) {
         Integer result = null;
+        String query = "SELECT count(pid) FROM pg_stat_activity WHERE application_name = ?";
+        if (staleOnly) {
+            query = query + QUERY_FILTER_STALE_SESSION;
+        }
         try (Connection con = postgres.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT count(pid) FROM pg_stat_activity WHERE application_name = ?")) {
-            ps.setString(1, "PostgreSQL JDBC Driver");
+            PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setString(1, APP_NAME_IN_POSTGRES);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 result = rs.getInt(1);
@@ -145,6 +162,23 @@ public class AppConfig {
             }
         } catch (SQLException e) {
             LOG.error("Error checking number of sessions in postgres database", e);
+        }
+        return result;
+    }
+
+    private Integer removeHangingSessionOnPostgresDb() {
+        Integer result = null;
+        try (Connection con = postgres.getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT pg_terminate_backend(pid) FROM pg_stat_activity " +
+                     "WHERE application_name = ? " + QUERY_FILTER_STALE_SESSION)) {
+            ps.setString(1, APP_NAME_IN_POSTGRES);
+            ResultSet rs = ps.executeQuery();
+            result = 0;
+            while (rs.next()) {
+                result++;
+            }
+        } catch (SQLException e) {
+            LOG.error("Error removing stale sessions in postgres database", e);
         }
         return result;
     }
