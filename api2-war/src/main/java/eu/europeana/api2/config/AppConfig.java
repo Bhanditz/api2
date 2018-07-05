@@ -94,10 +94,6 @@ public class AppConfig {
         LOG.info("  getMinEvictableIdleTimeMillis() = {}", this.postgres.getMinEvictableIdleTimeMillis());
         LOG.info("  getNumTestsPerEvictionRun = {}", this.postgres.getNumTestsPerEvictionRun());
         LOG.info("  getTimeBetweenEvictionRunsMillis = {}", this.postgres.getTimeBetweenEvictionRunsMillis());
-        LOG.info("  getValidationQuery = {}", this.postgres.getValidationQuery());
-        LOG.info("  getValidationQueryTimeout = {}", this.postgres.getValidationQueryTimeout());
-        LOG.info("  getValidationInterval = {}", this.postgres.getValidationInterval());
-        LOG.info("  getLogValidationErrors = {}", this.postgres.getLogValidationErrors());
 
         // When deploying on CF, the Spring Auto-reconfiguration framework will ignore all original datasource properties
         // and reset maxIdle and maxActive to 4 (see also the warning in the logs). We need to override these properties.
@@ -111,14 +107,19 @@ public class AppConfig {
         LOG.info("  minIdle = {}, maxIdle = {}, maxActive = {} ", this.postgres.getMinIdle(),
                 this.postgres.getMaxIdle(), this.postgres.getMaxActive());
 
-        // enable clean-up of threads that run longer than 120 secs -> this can leave sessions hanging on the postgresql
-        // database side!!
-            this.postgres.setTestOnBorrow(false);
-        //    this.postgres.setRemoveAbandoned(true);
-        //    this.postgres.setRemoveAbandonedTimeout(120); // sec
-        //    this.postgres.setLogAbandoned(true);
-        LOG.info("  isTestOnBorrow = {}, isRemoveAbandoned = {}, removeAbandonedTimeout = {}, logAbandoned = {} ",
-                this.postgres.isTestOnBorrow(), this.postgres.isRemoveAbandoned(), this.postgres.getRemoveAbandonedTimeout(),
+        // Check thread before using it. This is vital in case there are connection resets!
+        this.postgres.setTestOnBorrow(true);
+        this.postgres.setValidationInterval(2000); // reduce problems when connection is reset
+        LOG.info("  isTestOnBorrow = {}, validationInterval = {}, validationQuery = {}, validationQueryTimeout = {}, logValidationError = {}",
+                this.postgres.isTestOnBorrow(),
+                this.postgres.getValidationInterval(),
+                this.postgres.getValidationQuery(),
+                this.postgres.getValidationQueryTimeout(),
+                this.postgres.getLogValidationErrors());
+
+        LOG.info("  isRemoveAbandoned = {}, removeAbandonedTimeout = {}, logAbandoned = {} ",
+                this.postgres.isRemoveAbandoned(),
+                this.postgres.getRemoveAbandonedTimeout(),
                 this.postgres.isLogAbandoned());
 
     }
