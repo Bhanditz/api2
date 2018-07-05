@@ -6,6 +6,7 @@ import eu.europeana.api2.v2.service.SugarCRMImporter;
 import eu.europeana.api2.v2.utils.ApiKeyUtils;
 import eu.europeana.features.ObjectStorageClient;
 import eu.europeana.features.S3ObjectStorageClient;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.tomcat.jdbc.pool.DataSource;
@@ -101,15 +102,20 @@ public class AppConfig {
         LOG.info("Programmatically overriding settings:");
         this.postgres.setDefaultReadOnly(true);
         LOG.info("  defaultReadOnly = {}", this.postgres.getDefaultReadOnly());
-        this.postgres.setMinIdle(1);
-        this.postgres.setMaxIdle(4);
+        this.postgres.setMinIdle(0);
+        this.postgres.setMaxIdle(2);
         this.postgres.setMaxActive(10);
         LOG.info("  minIdle = {}, maxIdle = {}, maxActive = {} ", this.postgres.getMinIdle(),
                 this.postgres.getMaxIdle(), this.postgres.getMaxActive());
 
         // Check thread before using it. This is vital in case there are connection resets!
         this.postgres.setTestOnBorrow(true);
-        this.postgres.setValidationInterval(2000); // reduce problems when connection is reset
+        // The shorter the interval the more overhead, but also less problems when a connection is reset
+        this.postgres.setValidationInterval(1000);
+        // ValidationQuery has to be set, otherwise testOnBorrow won't work!
+        if (StringUtils.isEmpty(this.postgres.getValidationQuery())) {
+            this.postgres.setValidationQuery("SELECT 1");
+        }
         LOG.info("  isTestOnBorrow = {}, validationInterval = {}, validationQuery = {}, validationQueryTimeout = {}, logValidationError = {}",
                 this.postgres.isTestOnBorrow(),
                 this.postgres.getValidationInterval(),
