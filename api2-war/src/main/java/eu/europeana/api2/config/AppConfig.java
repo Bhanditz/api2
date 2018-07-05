@@ -106,14 +106,14 @@ public class AppConfig {
         this.postgres.setDefaultReadOnly(true);
         LOG.info("  defaultReadOnly = {}", this.postgres.getDefaultReadOnly());
         this.postgres.setMinIdle(1);
-        this.postgres.setMaxIdle(5);
+        this.postgres.setMaxIdle(4);
         this.postgres.setMaxActive(10);
         LOG.info("  minIdle = {}, maxIdle = {}, maxActive = {} ", this.postgres.getMinIdle(),
                 this.postgres.getMaxIdle(), this.postgres.getMaxActive());
 
         // enable clean-up of threads that run longer than 120 secs -> this can leave sessions hanging on the postgresql
         // database side!!
-        // this.postgres.setTestOnBorrow(true);
+            this.postgres.setTestOnBorrow(false);
         //    this.postgres.setRemoveAbandoned(true);
         //    this.postgres.setRemoveAbandonedTimeout(120); // sec
         //    this.postgres.setLogAbandoned(true);
