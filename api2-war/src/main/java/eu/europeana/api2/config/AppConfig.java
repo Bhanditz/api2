@@ -100,8 +100,6 @@ public class AppConfig {
         // and reset maxIdle and maxActive to 4 (see also the warning in the logs). We need to override these properties.
         // We are setting to 10, so we can scale up to 10 instances (postgres has threshold of 100 connections)
         LOG.info("Programmatically overriding settings:");
-        this.postgres.setDefaultReadOnly(true);
-        LOG.info("  defaultReadOnly = {}", this.postgres.getDefaultReadOnly());
         this.postgres.setMinIdle(0);
         this.postgres.setMaxIdle(2);
         this.postgres.setMaxActive(10);
@@ -161,11 +159,12 @@ public class AppConfig {
         try (Connection con = postgres.getConnection();
             PreparedStatement ps = con.prepareStatement(query)) {
             ps.setString(1, APP_NAME_IN_POSTGRES);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                result = rs.getInt(1);
-            } else {
-                LOG.error("Postgres database didn't return session data");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    result = rs.getInt(1);
+                } else {
+                    LOG.error("Postgres database didn't return session data");
+                }
             }
         } catch (SQLException e) {
             LOG.error("Error checking number of sessions in postgres database", e);
@@ -179,10 +178,11 @@ public class AppConfig {
             PreparedStatement ps = con.prepareStatement("SELECT pg_terminate_backend(pid) FROM pg_stat_activity " +
                      "WHERE application_name = ? " + QUERY_FILTER_STALE_SESSION)) {
             ps.setString(1, APP_NAME_IN_POSTGRES);
-            ResultSet rs = ps.executeQuery();
-            result = 0;
-            while (rs.next()) {
-                result++;
+            try (ResultSet rs = ps.executeQuery()) {
+                result = 0;
+                while (rs.next()) {
+                    result++;
+                }
             }
         } catch (SQLException e) {
             LOG.error("Error removing stale sessions in postgres database", e);
