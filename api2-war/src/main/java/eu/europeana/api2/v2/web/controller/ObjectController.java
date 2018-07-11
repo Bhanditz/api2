@@ -50,11 +50,13 @@ import eu.europeana.corelib.search.SearchService;
 import eu.europeana.corelib.solr.bean.impl.FullBeanImpl;
 import eu.europeana.corelib.edm.exceptions.MongoRuntimeException;
 import eu.europeana.corelib.utils.EuropeanaUriUtils;
+import eu.europeana.corelib.web.support.Configuration;
 import eu.europeana.corelib.web.utils.RequestUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +66,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
@@ -89,7 +92,12 @@ public class ObjectController {
 
     private SearchService searchService;
 
-    private ApiKeyUtils apiKeyUtils;
+    private ApiKeyUtils   apiKeyUtils;
+
+    @Resource
+    private Configuration configuration;
+
+    private boolean noBaseUrl = false;
 
     /**
      * Create a new ObjectController
@@ -215,6 +223,7 @@ public class ObjectController {
      * @param collectionId
      * @param recordId
      * @param wskey
+     * @param noBaseUrl
      * @param webRequest
      * @param servletRequest
      * @param response
@@ -226,10 +235,12 @@ public class ObjectController {
     public ModelAndView recordRdf(@PathVariable String collectionId,
                                   @PathVariable String recordId,
                                   @RequestParam(value = "wskey", required = true) String wskey,
+                                  @RequestParam(value = "nobaseurl", required = false) String noBaseUrl,
                                   WebRequest webRequest,
                                   HttpServletRequest servletRequest,
                                   HttpServletResponse response) throws ApiLimitException {
         RequestData data = new RequestData(collectionId, recordId, wskey, null, null, webRequest, servletRequest);
+        setNoBaseUrl(noBaseUrl);
         try {
             return (ModelAndView) handleRecordRequest(RecordType.OBJECT_RDF, data, response);
         } catch (EuropeanaException e) {
@@ -402,7 +413,7 @@ public class ObjectController {
 
     private ModelAndView generateRdf(FullBean bean) {
         Map<String, Object> model = new HashMap<>();
-        model.put("record", EdmUtils.toEDM((FullBeanImpl) bean, false));
+        model.put("record", EdmUtils.toEDM((FullBeanImpl) bean, noBaseUrl));
         return new ModelAndView("rdf", model);
     }
 
@@ -520,6 +531,18 @@ public class ObjectController {
         final Marshaller   marshaller   = context.createMarshaller();
         final StringWriter stringWriter = new StringWriter();
         marshaller.marshal(response, stringWriter);
+    }
+
+    private void setNoBaseUrl(String noBaseUrl){
+        if (null == noBaseUrl){
+            if (null == configuration.getNoBaseUrl()){
+                this.noBaseUrl = false;
+            } else {
+                this.noBaseUrl = BooleanUtils.toBoolean(configuration.getNoBaseUrl());
+            }
+        } else {
+            this.noBaseUrl = BooleanUtils.toBoolean(noBaseUrl);
+        }
     }
 
     /**
