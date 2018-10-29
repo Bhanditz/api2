@@ -515,6 +515,8 @@ public class ObjectController {
     }
 
     /**
+     * NOTE this method is called in commented-out code above, check those first before removing this
+     *
      * Reconstruct the original url and instead of the old EuropeanaId inserts the new provided one.
      * <p>
      * Original code snippet was copied from https://stackoverflow.com/a/5212336 and slightly adjusted.
