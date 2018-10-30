@@ -73,6 +73,9 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.*;
 
+import static eu.europeana.api2.v2.utils.HttpCacheUtils.IFMATCH;
+import static eu.europeana.api2.v2.utils.HttpCacheUtils.IFNONEMATCH;
+
 /**
  * Provides record information in all kinds of formats; json, json-ld, rdf and srw
  *
@@ -368,18 +371,22 @@ public class ObjectController {
 
         // If If-None-Match is present: check if it contains a matching eTag OR == '*"
         // Yes: return HTTP 304 + cache headers. Ignore If-Modified-Since (RFC 7232)
-        if (httpCacheUtils.doesAnyIfNoneMatch(data.servletRequest, eTag)) {
-            response = httpCacheUtils.addDefaultHeaders(response, eTag, tsUpdated, ALLOWED, "no-cache");
-            if (StringUtils.isNotBlank(data.servletRequest.getHeader("Origin"))){
-                response = httpCacheUtils.addCorsHeaders(response, ALLOWED, ALLOWHEADERS, EXPOSEHEADERS, "600");
+        if (StringUtils.isNotBlank(data.servletRequest.getHeader(IFNONEMATCH))){
+            if (httpCacheUtils.doesAnyIfNoneMatch(data.servletRequest, eTag)) {
+                response = httpCacheUtils.addDefaultHeaders(response, eTag, tsUpdated, ALLOWED, "no-cache");
+                if (StringUtils.isNotBlank(data.servletRequest.getHeader("Origin"))){
+                    response = httpCacheUtils.addCorsHeaders(response, ALLOWED, ALLOWHEADERS, EXPOSEHEADERS, "600");
+                }
+                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                return null;
             }
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-            return null;
         // If If-Match is present: check if it contains a matching eTag OR == '*"
         // Yes: proceed. No: return HTTP 412, no cache headers
-        } else if (httpCacheUtils.doesPreconditionFail(data.servletRequest, eTag)){
-            response.setStatus(HttpServletResponse.SC_PRECONDITION_FAILED);
-            return null;
+        } else if (StringUtils.isNotBlank(data.servletRequest.getHeader(IFMATCH))){
+            if (httpCacheUtils.doesPreconditionFail(data.servletRequest, eTag)){
+                response.setStatus(HttpServletResponse.SC_PRECONDITION_FAILED);
+                return null;
+            }
         // check if “If-Modified-Since” is present and on or after timestamp_updated
         // yes: return HTTP 304 no: continue
         } else if (httpCacheUtils.isNotModifiedSince(data.servletRequest, bean.getTimestampUpdated())){

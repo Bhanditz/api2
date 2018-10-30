@@ -23,13 +23,13 @@ import java.util.*;
  */
 public class HttpCacheUtils {
 
-    private static final Logger           LOG               = Logger.getLogger(HttpCacheUtils.class);
-    private static final Properties       properties        = new Properties();
-    private static final String           LOCALBUILDVERSION = "localbuildversion";
-    private static final String           IFNONEMATCH       = "If-None-Match";
-    private static final String           IFMATCH           = "If-Match";
-    private static final String           IFMODIFIEDSINCE   = "If-Modified-Since";
-    private static final String           ANY               = "\"*\"";
+    private static final Logger     LOG               = Logger.getLogger(HttpCacheUtils.class);
+    private static final Properties properties        = new Properties();
+    private static final String     LOCALBUILDVERSION = "localbuildversion";
+    public  static final String     IFNONEMATCH       = "If-None-Match";
+    public  static final String     IFMATCH           = "If-Match";
+    private static final String     IFMODIFIEDSINCE   = "If-Modified-Since";
+    private static final String     ANY               = "\"*\"";
 
     private static boolean useLocalBuildVersion = false;
 
