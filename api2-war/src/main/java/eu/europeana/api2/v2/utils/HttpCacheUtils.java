@@ -222,7 +222,11 @@ public class HttpCacheUtils {
      * @return boolean true IF If-Modified-Since header is supplied AND
      *                         is earlier the timestamp_updated
      *         Otherwise false
+     *         NOTE this method was used for implementing the If-Modified-Since exception on the If-None-Match header
+     *         processing specified in RFC 2616. It turns out that this RFC is obsolete and superseded by RFC 7232,
+     *         which simply states to ignore the If-Modified-Since when If-None-Match is available (and can be handled)
      */
+    @Deprecated
     public boolean isModifiedSince(HttpServletRequest request, Date tsUpdated){
         return ( StringUtils.isNotBlank(request.getHeader(IFMODIFIEDSINCE)) &&
                  Objects.requireNonNull(stringToZonedUTC(request.getHeader(IFMODIFIEDSINCE)))

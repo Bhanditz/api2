@@ -362,16 +362,13 @@ public class ObjectController {
             ItemFix.apply(bean);
         }
 
-        // NOTE for now I will stick to using the ISO string format because that includes milliseconds, whereas the
-        // RFC 1123 format doesn't. ETag is created from timestamp + api version.
+        // ETag is created from timestamp + api version.
         String tsUpdated = httpCacheUtils.dateToRFC1123String(bean.getTimestampUpdated());
         String eTag      = httpCacheUtils.generateETag(tsUpdated, true);
 
         // If If-None-Match is present: check if it contains a matching eTag OR == '*"
-        // Yes: return HTTP 304 + cache headers - UNLESS If-Modified-Since is present AND earlier than timestamp_updated
-        // No: continue
-        if (httpCacheUtils.doesAnyIfNoneMatch(data.servletRequest, eTag) &&
-            !httpCacheUtils.isModifiedSince(data.servletRequest, bean.getTimestampUpdated())) {
+        // Yes: return HTTP 304 + cache headers. Ignore If-Modified-Since (RFC 7232)
+        if (httpCacheUtils.doesAnyIfNoneMatch(data.servletRequest, eTag)) {
             response = httpCacheUtils.addDefaultHeaders(response, eTag, tsUpdated, ALLOWED, "no-cache");
             if (StringUtils.isNotBlank(data.servletRequest.getHeader("Origin"))){
                 response = httpCacheUtils.addCorsHeaders(response, ALLOWED, ALLOWHEADERS, EXPOSEHEADERS, "600");
