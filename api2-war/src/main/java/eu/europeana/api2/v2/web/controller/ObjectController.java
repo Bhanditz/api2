@@ -360,10 +360,15 @@ public class ObjectController {
                         + data.europeanaObjectId, data.apikeyCheckResponse.getRequestNumber()), data.callback);
             }
             return result;
-        } else {
-            // ugly solution for EA-1257, but it works
-            ItemFix.apply(bean);
         }
+
+        // 2017-07-06 PE: Code below was implemented as part of ticket #662. However as collections does not support this
+        // yet activation of this functionality is postponed.
+        //        if (!bean.getAbout().equals(data.europeanaObjectId)) {
+        //            response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+        //            response.setHeader("Location", generateRedirectUrl(data.servletRequest, data.europeanaObjectId, bean.getAbout()));
+        //            return null;
+        //        }
 
         // ETag is created from timestamp + api version.
         String tsUpdated = httpCacheUtils.dateToRFC1123String(bean.getTimestampUpdated());
@@ -401,30 +406,9 @@ public class ObjectController {
 
         // add headers, except Content-Type (that differs per recordType)
         response = httpCacheUtils.addDefaultHeaders(response, eTag, tsUpdated, ALLOWED, "no-cache");
-
         if (StringUtils.isNotBlank(data.servletRequest.getHeader("Origin"))){
             response = httpCacheUtils.addCorsHeaders(response, ALLOWED, ALLOWHEADERS, EXPOSEHEADERS, "600");
         }
-
-        // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        // TODO review below comments from previous tickets (re-, de-, or non-implemented)
-
-        // 2017-07-06 PE: Code below was implemented as part of ticket #662. However as collections does not support his yet,
-        // activation of this functionality is postponed
-
-        //  response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
-        //  response.setHeader("Location", generateRedirectUrl(data.servletRequest, data.europeanaObjectId, newId));
-        //  result = null;
-
-        // check modified
-        // 2017-07-10 PE: Decided to postpone the modified check for now (see also ticket 676 / EA-680)
-        //if (bean.getTimestampUpdated() != null && data.webRequest.checkNotModified(bean.getTimestampUpdated().getTime()))
-
-        // checkNotModified method will set LastModified header automatically and will return 304 - Not modified if necessary
-        // (but only when clients include the If_Modified_Since header in their request)
-        // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-
 
         // generate output depending on type of record
         Object output;
