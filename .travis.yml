@@ -5,8 +5,43 @@ language: java
 jdk:
   - oraclejdk8
 install:
-  - mvn install -s ~/travis_maven.xml -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - echo "<settings>
+              <profiles>
+                  <profile>
+                      <activation>
+                          <activeByDefault>true</activeByDefault>
+                      </activation>
+                      <id>travis</id>
+                      <repositories>
+                          <repository>
+                              <id>europeana-libs-releases</id>
+                              <name>libs-release</name>
+                              <url>http://artifactory.eanadev.org/artifactory/libs-release</url>
+                              <snapshots>
+                                  <enabled>false</enabled>
+                              </snapshots>
+                          </repository>
+                          <repository>
+                              <id>europeana-libs-snapshots</id>
+                              <name>libs-snapshot</name>
+                              <url>http://artifactory.eanadev.org/artifactory/libs-snapshot</url>
+                          </repository>
+                      </repositories>
+                      <pluginRepositories>
+                          <pluginRepository>
+                              <id>europeana-plugins-release</id>
+                              <name>plugins-release</name>
+                              <url>http://artifactory.eanadev.org/artifactory/plugins-release</url>
+                              <snapshots>
+                                  <enabled>false</enabled>
+                              </snapshots>
+                          </pluginRepository>
+                      </pluginRepositories>
+                  </profile>
+              </profiles>
+          </settings>" > ~/settings.xml
+  - mvn install -s ~/settings.xml -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script:
-  - mvn test -B -s ~/travis_maven.xml
+  - mvn test -B -s ~/settings.xml
 after_success:
-  - mvn clean cobertura:cobertura coveralls:report
+  - mvn cobertura:cobertura coveralls:report -s ~/settings.xml
