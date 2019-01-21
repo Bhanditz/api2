@@ -44,4 +44,4 @@ install:
 script:
   - mvn test -B -s ~/settings.xml
 after_success:
-  - mvn cobertura:cobertura coveralls:report -s ~/settings.xml
+  - mvn cobertura:cobertura org.eluder.coveralls:coveralls-maven-plugin:report -s ~/settings.xml
