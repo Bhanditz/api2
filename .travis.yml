@@ -40,7 +40,7 @@ install:
           </settings>" > ~/settings.xml
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -s ~/settings.xml
 script:
-  - mvn test org.jacoco:jacoco-maven-plugin:report -B -s ~/settings.xml
+  - mvn test org.jacoco:jacoco-maven-plugin:report-aggregate -B -s ~/settings.xml
 after_success:
   - mvn org.eluder.coveralls:coveralls-maven-plugin:report -B -s ~/settings.xml
 notifications:
