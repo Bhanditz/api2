@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <profiles>
+        <profile>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <id>travis</id>
+
+            <repositories>
+                <repository>
+                    <id>europeana-libs-release</id>
+                    <name>libs-release</name>
+                    <url>http://artifactory.eanadev.org/artifactory/libs-release</url>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>europeana-libs-release-local</id>
+                    <name>libs-release-local</name>
+                    <url>http://artifactory.eanadev.org/artifactory/libs-release-local</url>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>europeana-libs-snapshot</id>
+                    <name>libs-snapshot</name>
+                    <url>http://artifactory.eanadev.org/artifactory/libs-snapshot</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>daily</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>europeana-plugins-release</id>
+                    <name>plugins-release</name>
+                    <url>http://artifactory.eanadev.org/artifactory/plugins-release</url>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>europeana-plugins-snapshot</id>
+                    <name>plugins-snapshot</name>
+                    <url>http://artifactory.eanadev.org/artifactory/plugins-snapshot</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>daily</updatePolicy>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+
+        </profile>
+    </profiles>
+
+</settings>
