@@ -73,7 +73,6 @@ import eu.europeana.api2.v2.utils.technicalfacets.CommonTagExtractor;
 import eu.europeana.api2.v2.utils.TagUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import jena.query;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.collections.MapUtils;
@@ -218,10 +217,10 @@ public class SearchController {
         // Note that this is about the parameter 'colourpalette', not the refinement: they are processed below
         // [existing-query] AND [filter_tags-1 AND filter_tags-2 AND filter_tags-3 ... ]
         if (!colourPalette.isEmpty()) {
-            Iterator<Integer> it = TagUtils.colourPaletteFilterTags(colourPalette).iterator();
-            if (it.hasNext()) colourPalettefilterQuery = "filter_tags:" + it.next().toString();
-            while (it.hasNext()) colourPalettefilterQuery += " AND filter_tags:" + it.next().toString();
-            queryString += StringUtils.isNotBlank(queryString) ? " AND " + colourPalettefilterQuery: colourPalettefilterQuery ;
+            queryString = filterQueryBuilder(TagUtils.colourPaletteFilterTags(colourPalette).iterator(),
+                                             queryString,
+                                             " AND ",
+                                             false);
         }
 
         final List<Integer> filterTags = new ArrayList<>();
@@ -354,7 +353,8 @@ public class SearchController {
                 "' is not defined"), callback);
             } else if (e.getProblem().equals(ProblemType.SOLR_IS_BROKEN) && StringUtils.contains(query.getParameterMap().get("hl.fl"), '*')) {
                 LOG.error("This is the \"field 'what' was indexed without offsets\"-error, see EA-1441 when executing search: " + SEARCHJSON);
-                return JsonUtils.toJson(new ApiError(wskey, "Solr indexing error, occurs when hits.fl parameter contains '*'"));
+                return JsonUtils.toJson(new ApiError(wskey, "Solr indexing error for 'query=" + queryString
+                                                            + "' and 'hit.fl=" + hlFl + "'"));
             } else {
                 LOG.error(wskey + SEARCHJSON, e);
             }
